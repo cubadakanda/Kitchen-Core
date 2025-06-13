@@ -1,0 +1,209 @@
+### USER API ###
+
+# Get all users
+GET http://localhost:5000/users
+
+###
+# Get user by ID
+GET http://localhost:5000/users/1
+
+###
+# Create a new user
+POST http://localhost:5000/users
+Content-Type: application/json
+
+{
+    "name": "John Doe",
+    "email": "johndoe@gmail.com",
+    "password": "password123",
+    "role": "user",
+    "gender": "laki-laki"
+}
+
+###
+# Update an existing user
+PATCH http://localhost:5000/users/1
+Content-Type: application/json
+
+{
+    "name": "John Doe Updated",
+    "email": "johndoeupdated@gmail.com"
+}
+
+###
+# Delete a user
+DELETE http://localhost:5000/users/1
+
+
+### CATEGORIES API ###
+
+# Get all categories
+GET http://localhost:5000/categories
+
+###
+# Get category by ID
+GET http://localhost:5000/categories/1
+
+###
+# Create a new category
+POST http://localhost:5000/categories
+Content-Type: application/json
+
+{
+    "name": "Hidangan Penutup",
+    "slug": "hidangan-penutup"
+}
+
+###
+# Update an existing category
+PATCH http://localhost:5000/categories/1
+Content-Type: application/json
+
+{
+    "name": "Hidangan Penutup Updated",
+    "slug": "hidangan-penutup-updated"
+}
+
+###
+# Delete a category
+DELETE http://localhost:5000/categories/1
+
+
+### RECIPES API ###
+
+# Get all recipes
+GET http://localhost:5000/recipes
+
+###
+# Get recipe by ID
+GET http://localhost:5000/recipes/1
+
+###
+# Create a new recipe
+POST http://localhost:5000/recipes
+Content-Type: application/json
+
+{
+    "user_id": 1,
+    "category_id": 1,
+    "title": "Nasi Goreng Spesial",
+    "slug": "nasi-goreng-spesial",
+    "description": "Nasi goreng dengan bumbu spesial",
+    "ingredients": "Nasi, telur, bawang merah, bawang putih, kecap manis, garam, merica",
+    "instructions": "1. Panaskan wajan, 2. Tumis bawang merah dan bawang putih, 3. Masukkan telur, 4. Masukkan nasi, 5. Tambahkan kecap, garam, dan merica",
+    "image_url": "nasi-goreng.jpg",
+    "prep_time": 10,
+    "cook_time": 15,
+    "servings": "2 porsi",
+    "status": "published"
+}
+
+###
+# Update an existing recipe
+PATCH http://localhost:5000/recipes/1
+Content-Type: application/json
+
+{
+    "title": "Nasi Goreng Super Spesial",
+    "description": "Nasi goreng dengan bumbu super spesial dan rahasia"
+}
+
+###
+# Delete a recipe
+DELETE http://localhost:5000/recipes/1
+
+
+### USER FAVORITES API ###
+
+# Get all favorites
+GET http://localhost:5000/favorites
+
+###
+# Get favorite by user ID and recipe ID
+GET http://localhost:5000/favorites/user/1/recipe/1
+
+###
+# Get all favorites for a specific user
+GET http://localhost:5000/favorites/user/1
+
+###
+# Add a recipe to favorites
+POST http://localhost:5000/favorites
+Content-Type: application/json
+
+{
+    "user_id": 1,
+    "recipe_id": 1
+}
+
+###
+# Remove a recipe from favorites
+DELETE http://localhost:5000/favorites/user/1/recipe/1
+
+
+### RECIPE RATINGS API ###
+
+# Get all ratings
+GET http://localhost:5000/ratings
+
+###
+# Get rating by ID
+GET http://localhost:5000/ratings/1
+
+###
+# Get all ratings for a specific recipe
+GET http://localhost:5000/ratings/recipe/1
+
+###
+# Get average rating for a recipe
+GET http://localhost:5000/ratings/recipe/1/average
+
+###
+# Create a new rating
+POST http://localhost:5000/ratings
+Content-Type: application/json
+
+{
+    "user_id": 1,
+    "recipe_id": 1,
+    "rating": 5,
+    "review_text": "Resep yang sangat enak dan mudah diikuti!"
+}
+
+###
+# Update an existing rating
+PATCH http://localhost:5000/ratings/1
+Content-Type: application/json
+
+{
+    "rating": 4,
+    "review_text": "Resep yang enak tapi perlu sedikit improvisasi."
+}
+
+###
+# Delete a rating
+DELETE http://localhost:5000/ratings/1
+
+
+### Authentication API (Example - Implement as needed) ###
+
+# Register a new user
+POST http://localhost:5000/register
+Content-Type: application/json
+
+{
+    "name": "Admin User",
+    "email": "admin@example.com",
+    "password": "admin123",
+    "role": "admin"
+}
+
+###
+# Login
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{
+    "email": "admin@example.com",
+    "password": "admin123"
+}
