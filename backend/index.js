@@ -15,21 +15,41 @@ import "./models/user_favoritesModel.js";
 import "./models/recipe_ratingsModel.js";
 
 const app = express();
-app.use(cors());
+
+// Configure CORS properly
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
-app.use(UserRoute);
-app.use(CategoryRoute);
-app.use(RecipeRoute);
-app.use(UserFavoriteRoute);
-app.use(RecipeRatingRoute);
+
+// Add API prefix to all routes
+app.use('/api', UserRoute);
+app.use('/api', CategoryRoute);
+app.use('/api', RecipeRoute);
+app.use('/api', UserFavoriteRoute);
+app.use('/api', RecipeRatingRoute);
 
 // Database sync
 const initDb = async () => {
     try {
+        // Test database connection
+        await db.authenticate();
+        console.log('Database connection has been established successfully.');
+        
+        // Sync database
         await db.sync();
         console.log("Database synchronized");
+        
+        // Log all available tables
+        console.log('Available tables:', Object.keys(db.models));
+        
     } catch (error) {
-        console.error("Error synchronizing database:", error);
+        console.error("Error with database:", error);
+        console.error("Make sure MySQL is running and database 'db_web' exists");
     }
 };
 
