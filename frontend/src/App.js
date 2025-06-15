@@ -1,8 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
+import SlidingAuth from './components/auth/SlidingAuth';
 
 // Lazy load components for better performance
 const Home = React.lazy(() => import('./pages/user/Home'));
@@ -24,12 +23,12 @@ const Loading = () => (
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <React.Suspense fallback={<Loading />}>
+      <Router>        <React.Suspense fallback={<Loading />}>
           <Routes>
             {/* Auth Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/auth" element={<SlidingAuth />} />
+            <Route path="/login" element={<SlidingAuth />} />
+            <Route path="/register" element={<SlidingAuth />} />
             
             {/* User Routes */}
             <Route path="/home" element={<Home />} />
@@ -42,9 +41,9 @@ function App() {
             <Route path="/admin/recipes" element={<ManageRecipes />} />
             <Route path="/admin/categories" element={<ManageCategories />} />
             
-            {/* Redirect to login as default */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* Redirect to auth as default */}
+            <Route path="/" element={<Navigate to="/auth" replace />} />
+            <Route path="*" element={<Navigate to="/auth" replace />} />
           </Routes>
         </React.Suspense>
       </Router>

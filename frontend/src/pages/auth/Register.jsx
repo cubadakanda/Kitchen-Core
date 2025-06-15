@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
 
 const Register = () => {
@@ -7,10 +9,23 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: ''
-  });
-  const [loading, setLoading] = useState(false);
+  });  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/home');
+      }
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     setFormData({
@@ -55,15 +70,21 @@ const Register = () => {
       setLoading(false);
     }
   };
-
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Register for Kitchen Core</h2>
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
+    <div className="auth-page">
+      <div className="auth-container">
+        <div className="auth-logo">
+          <img src="/logo.svg" alt="Kitchen Core Logo" className="kitchen-logo" />
+          <h1>Kitchen Core</h1>
+          <p>Your Recipe Management Platform</p>
+        </div>
         
-        <form onSubmit={handleSubmit}>
+        <div className="auth-card">
+          <h2>Create Your Account</h2>
+          {error && <div className="auth-error">{error}</div>}
+          {success && <div className="auth-success">{success}</div>}
+          
+          <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
             <input
@@ -116,11 +137,11 @@ const Register = () => {
             {loading ? 'Registering...' : 'Register'}
           </button>
         </form>
-        
-        <p className="auth-link">
-          Already have an account? <a href="/login">Login here</a>
+          <p className="auth-link">
+          Already have an account? <Link to="/login">Login here</Link>
         </p>
       </div>
+    </div>
     </div>
   );
 };

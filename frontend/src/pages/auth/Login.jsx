@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
-import '../../styles/auth.css';
+// Style diimpor melalui file index.js untuk menghindari duplikasi
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -62,8 +62,8 @@ const Login = () => {
   };
   return (
     <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-logo">
+      <div className="auth-container">      <div className="auth-logo">
+          <img src="/logo.svg" alt="Kitchen Core Logo" className="kitchen-logo" />
           <h1>Kitchen Core</h1>
           <p>Your Recipe Management Platform</p>
         </div>
