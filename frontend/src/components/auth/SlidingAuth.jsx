@@ -153,12 +153,11 @@ const SlidingAuth = () => {
               disabled={loading && !isSignUp}
             />
             
-            <p className="social-text" style={{ color: 'black' }}>Kitchen Core - Recipe Management</p>
+            <p className="social-text">Kitchen Core - Recipe Management</p>
           </form>
 
           {/* Sign Up Form */}
-          <form onSubmit={handleRegisterSubmit} className="sign-up-form">
-            <h2 className="title">Sign Up</h2>
+          <form onSubmit={handleRegisterSubmit} className="sign-up-form">            <h2 className="title">Sign Up</h2>
             
             {error && isSignUp && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}

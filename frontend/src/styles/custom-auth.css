@@ -4,34 +4,53 @@
 }
 
 .auth-page {
-  background: linear-gradient(135deg, #2c3e50, #e74c3c);
+  background: linear-gradient(135deg, #0d3b66, #083358);
 }
 
 .auth-logo h1 {
-  color: #ffffff;
+  color: #faf0ca;
   font-weight: bold;
 }
 
 .auth-card {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(250, 240, 202, 0.95);
+  border: 2px solid #0d3b66;
 }
 
 .btn-primary {
-  background-color: #e74c3c;
+  background-color: #0d3b66;
   transition: all 0.3s ease;
+  color: #faf0ca;
 }
 
 .btn-primary:hover {
-  background-color: #c0392b;
+  background-color: #0a2e50;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .form-group input {
-  border: 1px solid #ddd;
-  background-color: #f9f9f9;
+  border: 1px solid #0d3b66;
+  background-color: #ffffff;
+}
+
+.form-group input:focus {
+  border-color: #0d3b66;
+  box-shadow: 0 0 0 2px rgba(13, 59, 102, 0.25);
+}
+
+.form-group label {
+  color: #0d3b66;
+}
+
+.auth-card h2 {
+  color: #0d3b66;
 }
 
 .auth-footer a {
-  color: #e74c3c;
+  color: #0d3b66;
+}
+
+.auth-footer p {
+  color: #0d3b66;
 }

@@ -205,7 +205,32 @@ button:hover {
   width: 250px;
   background-color: #34495e;
   color: white;
-  padding: 2rem 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.admin-sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.admin-sidebar-header h2 {
+  color: #e74c3c;
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-sidebar-header p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+}
+
+.admin-sidebar nav {
+  flex: 1;
+  padding: 1.5rem;
 }
 
 .admin-sidebar ul {
@@ -219,18 +244,44 @@ button:hover {
 .admin-sidebar a {
   color: white;
   text-decoration: none;
-  padding: 0.5rem;
+  padding: 0.6rem 0.8rem;
   display: block;
   border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
 .admin-sidebar a:hover {
   background-color: #2c3e50;
 }
 
+.admin-sidebar-footer {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-sidebar .logout-btn {
+  width: 100%;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.admin-sidebar .logout-btn:hover {
+  background-color: #c0392b;
+}
+
 .admin-main {
   flex: 1;
   padding: 2rem;
+  overflow-y: auto;
 }
 
 /* Loading Styles */

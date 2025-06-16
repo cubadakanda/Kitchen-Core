@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
+import { useAuth } from '../../context/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 const ManageCategories = () => {
+  const { user, loading: authLoading } = useAuth();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -41,6 +44,10 @@ const ManageCategories = () => {
       // Delete category
     }
   };
+  // Redirect if not admin
+  if (!authLoading && (!user || user.role !== 'admin')) {
+    return <Navigate to="/auth" replace />;
+  }
 
   return (
     <AdminLayout>

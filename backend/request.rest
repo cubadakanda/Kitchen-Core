@@ -13,10 +13,10 @@ POST http://localhost:5000/users
 Content-Type: application/json
 
 {
-    "name": "John Doe",
-    "email": "johndoe@gmail.com",
-    "password": "password123",
-    "role": "user",
+    "name": "Admin",
+    "email": "admin@gmail.com",
+    "password": "superadmin",
+    "role": "admin",
     "gender": "laki-laki"
 }
 

@@ -14,9 +14,12 @@ input {
 .auth-container {
   position: relative;
   width: 100%;
-  background-color: #FAF9F6;
+  background-color: #faf0ca;
   min-height: 100vh;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .forms-container {
@@ -44,15 +47,15 @@ form {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  padding: 0rem 5rem;
+  padding: 2.5rem 3rem;
   transition: all 0.2s 0.7s;
   overflow: hidden;
   grid-column: 1 / 2;
   grid-row: 1 / 2;
-  background-color: rgba(250, 249, 246, 0.95);
-  border-radius: 20px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(183, 65, 14, 0.1);
+  box-shadow: 0 4px 20px rgba(67, 40, 24, 0.08);
 }
 
 form.sign-up-form {
@@ -66,43 +69,45 @@ form.sign-in-form {
 }
 
 .title {
-  font-size: 2.2rem;
-  color: #B7410E;
-  margin-bottom: 10px;
-  font-weight: 700;
+  font-size: 1.8rem;
+  color: #432818;
+  margin-bottom: 20px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .input-field {
-  max-width: 380px;
+  max-width: 320px;
   width: 100%;
-  background-color: #FAF9F6;
-  border: 2px solid #e0ddd6;
-  margin: 10px 0;
-  height: 55px;
-  border-radius: 55px;
+  background-color: #ffffff;
+  border: 1px solid #e8e4d9;
+  margin: 8px 0;
+  height: 48px;
+  border-radius: 8px;
   display: grid;
-  grid-template-columns: 15% 85%;
-  padding: 0 0.4rem;
+  grid-template-columns: 12% 88%;
+  padding: 0 0.8rem;
   position: relative;
-  transition: border-color 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .input-field:hover {
-  background-color: #f5f2ec;
-  transform: translateY(-1px);
+  background-color: #ffffff;
+  border-color: #d9d2bf;
 }
 
 .input-field:focus-within {
-  border-color: #B7410E;
-  box-shadow: 0 0 0 3px rgba(183, 65, 14, 0.1);
+  border-color: #432818;
+  box-shadow: 0 0 0 2px rgba(67, 40, 24, 0.05);
 }
 
 .input-field i {
   text-align: center;
-  line-height: 55px;
-  color: #B7410E;
-  transition: 0.5s;
-  font-size: 1.1rem;
+  line-height: 48px;
+  color: #432818;
+  transition: 0.3s;
+  font-size: 0.9rem;
+  opacity: 0.7;
 }
 
 .input-field input {
@@ -110,53 +115,58 @@ form.sign-in-form {
   outline: none;
   border: none;
   line-height: 1;
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: #4a3a2a;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #432818;
 }
 
 .input-field input:focus {
-  color: #B7410E;
+  color: #432818;
 }
 
 .input-field input::placeholder {
-  color: #9a8a7a;
-  font-weight: 500;
+  color: #bbb0a3;
+  font-weight: 400;
+  font-size: 0.9rem;
 }
 
 .social-text {
   padding: 0.7rem 0;
-  font-size: 1rem;
-  color: #8a7a6a;
+  font-size: 0.85rem;
+  color: #6e5c4d;
   text-align: center;
+  opacity: 0.8;
 }
 
 .btn {
-  width: 150px;
-  background-color: #B7410E;
+  width: 100%;
+  max-width: 320px;
+  background-color: #432818;
   border: none;
   outline: none;
-  height: 49px;
-  border-radius: 49px;
-  color: #FAF9F6;
-  text-transform: uppercase;
-  font-weight: 600;
-  margin: 10px 0;
+  height: 42px;
+  border-radius: 8px;
+  color: #faf0ca;
+  text-transform: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  margin: 18px 0;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(183, 65, 14, 0.2);
+  transition: all 0.2s ease;
+  box-shadow: none;
 }
 
 .btn:hover {
-  background-color: #9a3408;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(183, 65, 14, 0.3);
+  background-color: #362116;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(67, 40, 24, 0.15);
 }
 
 .btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-  background-color: #8a6a5a;
+  background-color: #6c5a50;
 }
 
 .panels-container {
@@ -177,7 +187,7 @@ form.sign-in-form {
   top: -10%;
   right: 48%;
   transform: translateY(-50%);
-  background-image: linear-gradient(-45deg, #B7410E 0%, #9a3408 50%, #7a2906 100%);
+  background-color: #432818;
   transition: 1.8s ease-in-out;
   border-radius: 50%;
   z-index: 6;
@@ -209,40 +219,43 @@ form.sign-in-form {
 }
 
 .panel .content {
-  color: #FAF9F6;
+  color: #faf0ca;
   transition: transform 0.9s ease-in-out;
   transition-delay: 0.6s;
 }
 
 .panel h3 {
-  font-weight: 700;
-  line-height: 1;
-  font-size: 1.5rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-weight: 600;
+  line-height: 1.2;
+  font-size: 1.3rem;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .panel p {
-  font-size: 0.95rem;
-  padding: 0.7rem 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  font-size: 0.85rem;
+  padding: 0.6rem 0;
+  line-height: 1.4;
+  font-weight: 300;
+  text-shadow: none;
 }
 
 .btn.transparent {
   margin: 0;
   background: none;
-  border: 2px solid #FAF9F6;
-  width: 130px;
-  height: 41px;
-  font-weight: 600;
+  border: 1px solid #faf0ca;
+  width: 120px;
+  height: 36px;
+  font-weight: 500;
   font-size: 0.8rem;
-  color: #FAF9F6;
-  transition: all 0.3s ease;
+  color: #faf0ca;
+  transition: all 0.2s ease;
+  border-radius: 6px;
 }
 
 .btn.transparent:hover {
-  background-color: #FAF9F6;
-  color: #B7410E;
-  transform: translateY(-2px);
+  background-color: rgba(250, 240, 202, 0.2);
+  color: #faf0ca;
 }
 
 .right-panel .image,
@@ -252,29 +265,29 @@ form.sign-in-form {
 
 /* Error and Success Messages */
 .error-message {
-  background-color: #fae6e6;
-  color: #B7410E;
-  border: 1px solid #f5c6cb;
-  padding: 0.75rem;
-  border-radius: 25px;
-  margin-bottom: 1rem;
+  background-color: rgba(254, 245, 242, 0.8);
+  color: #432818;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 6px;
+  margin-bottom: 0.8rem;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   width: 100%;
-  max-width: 380px;
+  max-width: 320px;
 }
 
 .success-message {
-  background-color: #e8f5e8;
-  color: #2d5a2d;
-  border: 1px solid #c3e6c3;
-  padding: 0.75rem;
-  border-radius: 25px;
-  margin-bottom: 1rem;
+  background-color: rgba(232, 245, 232, 0.8);
+  color: #432818;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 6px;
+  margin-bottom: 0.8rem;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   width: 100%;
-  max-width: 380px;
+  max-width: 320px;
 }
 
 /* ANIMATION */
