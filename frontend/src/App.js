@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 import SlidingAuth from './components/auth/SlidingAuth';
+import './styles/admin.css';
 
 // Lazy load components for better performance
 const Home = React.lazy(() => import('./pages/user/NewHome')); // Using the new home component
@@ -11,6 +13,7 @@ const RecipeDetail = React.lazy(() => import('./pages/user/RecipeDetail'));
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 const ManageRecipes = React.lazy(() => import('./pages/admin/ManageRecipes'));
 const ManageCategories = React.lazy(() => import('./pages/admin/ManageCategories'));
+const ManageUsers = React.lazy(() => import('./pages/admin/ManageUsers'));
 
 // Loading component for suspense fallback
 const Loading = () => (
@@ -20,32 +23,103 @@ const Loading = () => (
   </div>
 );
 
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <Loading />;
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  return children;
+};
+
+// Admin Route Component
+const AdminRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <Loading />;
+  }
+  
+  if (!user || user.role !== 'admin') {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  return children;
+};
+
+function AppRoutes() {
+  return (
+    <Router>
+      <React.Suspense fallback={<Loading />}>
+        <Routes>
+          {/* Auth Routes */}
+          <Route path="/auth" element={<SlidingAuth />} />
+          <Route path="/login" element={<SlidingAuth />} />
+          <Route path="/register" element={<SlidingAuth />} />
+          
+          {/* User Routes - Protected */}
+          <Route path="/home" element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path="/recipes" element={
+            <ProtectedRoute>
+              <Recipes />
+            </ProtectedRoute>
+          } />
+          <Route path="/recipes/:id" element={
+            <ProtectedRoute>
+              <RecipeDetail />
+            </ProtectedRoute>
+          } />
+          
+          {/* Admin Routes - Protected */}
+          <Route path="/admin/dashboard" element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          } />
+          <Route path="/admin/recipes" element={
+            <AdminRoute>
+              <ManageRecipes />
+            </AdminRoute>
+          } />
+          <Route path="/admin/categories" element={
+            <AdminRoute>
+              <ManageCategories />
+            </AdminRoute>
+          } />
+          <Route path="/admin/users" element={
+            <AdminRoute>
+              <ManageUsers />
+            </AdminRoute>
+          } />
+          
+          {/* Redirect to auth as default */}
+          <Route path="/" element={<Navigate to="/auth" replace />} />
+          <Route path="*" element={<Navigate to="/auth" replace />} />
+        </Routes>
+      </React.Suspense>
+    </Router>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
-      <Router>        <React.Suspense fallback={<Loading />}>
-          <Routes>
-            {/* Auth Routes */}
-            <Route path="/auth" element={<SlidingAuth />} />
-            <Route path="/login" element={<SlidingAuth />} />
-            <Route path="/register" element={<SlidingAuth />} />
-            
-            {/* User Routes */}
-            <Route path="/home" element={<Home />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/recipes" element={<Recipes />} />
-            <Route path="/recipes/:id" element={<RecipeDetail />} />
-            
-            {/* Admin Routes */}
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/recipes" element={<ManageRecipes />} />
-            <Route path="/admin/categories" element={<ManageCategories />} />
-              {/* Redirect to home as default */}
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path="*" element={<Navigate to="/home" replace />} />
-          </Routes>
-        </React.Suspense>
-      </Router>
+      <AppRoutes />
     </AuthProvider>
   );
 }

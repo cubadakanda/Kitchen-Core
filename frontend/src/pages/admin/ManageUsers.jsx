@@ -163,7 +163,7 @@ const ManageUsers = () => {
   // Filter users based on search and role filter
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          user.email?.toLowerCase().includes(searchQuery.toLowerCase());
+                         user.email?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === 'all' || user.role === filterRole;
     
     return matchesSearch && matchesRole;
@@ -182,25 +182,34 @@ const ManageUsers = () => {
 
   return (
     <AdminLayout>
-      <div className="manage-users">
-        {/* Header */}
+      <div className="manage-users">        {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-8 mb-8 text-white shadow-2xl">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between items-center">
             <div>
               <h1 className="text-4xl font-bold mb-2">Manage Users</h1>
               <p className="text-purple-100 text-lg">Add, edit, and manage user accounts</p>
-              <div className="mt-4 flex items-center space-x-6">
-                <div className="flex items-center bg-white bg-opacity-20 rounded-lg px-3 py-2">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1" />
-                  </svg>
-                  <span className="font-semibold">{filteredUsers.length} Users</span>
+              <div className="mt-4 flex flex-wrap gap-4">
+                <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-xl px-4 py-3">
+                  <div className="bg-blue-500 rounded-full p-2 mr-3">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold">{filteredUsers.length}</div>
+                    <div className="text-xs text-white/80">Total Users</div>
+                  </div>
                 </div>
-                <div className="flex items-center bg-white bg-opacity-20 rounded-lg px-3 py-2">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
-                  <span className="font-semibold">{users.filter(u => u.role === 'admin').length} Admins</span>
+                <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-xl px-4 py-3">
+                  <div className="bg-purple-500 rounded-full p-2 mr-3">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold">{users.filter(u => u.role === 'admin').length}</div>
+                    <div className="text-xs text-white/80">Admin Users</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -217,8 +226,7 @@ const ManageUsers = () => {
               <p className="text-green-700 font-medium">{success}</p>
             </div>
           </div>
-        )}
-        {/* Error Message */}
+        )}        {/* Error Message */}
         {error && (
           <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-r-lg shadow-sm">
             <div className="flex items-center">
@@ -228,51 +236,36 @@ const ManageUsers = () => {
               <p className="text-red-700 font-medium">{error}</p>
             </div>
           </div>
-        )}
-        {/* Filters and Search */}
+        )}        {/* Filters and Search */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
-            <div className="flex-grow">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search Users</label>
+            <div className="flex-grow">              <label className="block text-sm font-medium text-gray-700 mb-2">Search Users</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  {/* --- PERBAIKAN: Ukuran ikon disesuaikan --- */}
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
                 <input
                   type="text"
                   placeholder="Search users by name or email..."
-                  // --- PERBAIKAN: Padding dan kelas disesuaikan ---
-                  className="pl-10 pr-4 py-2.5 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm"
+                  className="px-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm bg-gray-50"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-            </div>
-            <div className="lg:w-48">
+            </div>            <div className="lg:w-48">
               <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Role</label>
               <select 
                 value={filterRole} 
                 onChange={(e) => setFilterRole(e.target.value)}
-                // --- PERBAIKAN: Padding disesuaikan agar konsisten ---
-                className="w-full p-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm"
+                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm bg-gray-50"
               >
                 <option value="all">All Roles</option>
                 <option value="admin">Admin</option>
                 <option value="user">User</option>
               </select>
             </div>
-            <div className="lg:w-auto w-full">
-              <button 
+            <div className="lg:w-auto w-full mt-6 lg:mt-0">              <button 
                 onClick={handleAddNewUser}
-                className="w-full lg:w-auto bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2.5 rounded-xl flex items-center justify-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium text-sm"
+                className="w-full lg:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl flex items-center justify-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl font-medium text-sm"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <span>Add User</span>
+                <span>+ Add New User</span>
               </button>
             </div>
           </div>
@@ -291,40 +284,36 @@ const ManageUsers = () => {
               <p className="text-gray-500 font-medium">Loading users...</p>
             </div>
           ) : filteredUsers.length > 0 ? (
-            <>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 table-fixed">
+            <>              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                     <tr>
-                      {/* --- PERBAIKAN: Menambahkan lebar kolom eksplisit --- */}
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-1/3">User</th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-1/4">Email</th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[10%]">Role</th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[12%]">Gender</th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[12%]">Created</th>
-                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-[15%]">Actions</th>
+                      <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">User</th>
+                      <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
+                      <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Role</th>
+                      <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Gender</th>
+                      <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Created</th>
+                      <th className="px-4 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {currentUsers.map((user) => (
+                    {currentUsers.map((user, index) => (
                       <tr key={user.id} className="hover:bg-gray-50 transition-colors duration-200">
-                        {/* --- PERBAIKAN: Menghapus `whitespace-nowrap` agar teks bisa wrap --- */}
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-4 whitespace-nowrap">
                           <div className="flex items-center space-x-3">
-                            <div className="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
-                              <span className="text-white font-bold text-sm">
+                            <div className="flex-shrink-0 h-11 w-11 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                              <span className="text-white font-bold text-base">
                                 {user.name?.charAt(0).toUpperCase() || '?'}
                               </span>
                             </div>
                             <div>
-                              <div className="text-sm font-semibold text-gray-900 break-words">{user.name}</div>
+                              <div className="text-sm font-semibold text-gray-800">{user.name}</div>
                               <div className="text-xs text-gray-500">ID: {user.id}</div>
                             </div>
                           </div>
                         </td>
-                        {/* --- PERBAIKAN: Menghapus `whitespace-nowrap` dan menambahkan `break-words` --- */}
-                        <td className="px-4 py-3">
-                          <div className="text-sm text-gray-900 break-words">{user.email}</div>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{user.email}</div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full ${
@@ -336,20 +325,19 @@ const ManageUsers = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                          <span className="bg-gray-100 px-2 py-1 rounded-full text-xs capitalize">
-                            {user.gender?.replace('-', ' ') || 'Not specified'}
+                          <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">
+                            {user.gender || 'Not specified'}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                           {user.createdAt ? new Date(user.createdAt).toLocaleDateString('id-ID') : 'N/A'}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-center">
-                          <div className="flex items-center justify-center space-x-2">
+                        </td>                        <td className="px-4 py-4 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center space-x-3">
                             <button
                               onClick={() => handleEditUser(user)}
-                              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-200 shadow-sm flex items-center space-x-1"
+                              className="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-4 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 flex items-center space-x-2"
                             >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
                               <span>Edit</span>
@@ -357,9 +345,9 @@ const ManageUsers = () => {
                             {currentUser.id !== user.id && (
                               <button
                                 onClick={() => setConfirmDelete(user)}
-                                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-200 shadow-sm flex items-center space-x-1"
+                                className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 flex items-center space-x-2"
                               >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                                 <span>Delete</span>
@@ -435,7 +423,7 @@ const ManageUsers = () => {
         </div>
       </div>
 
-      {/* Add/Edit User Modal (Tidak ada perubahan di sini) */}
+      {/* Add/Edit User Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
@@ -449,9 +437,10 @@ const ManageUsers = () => {
             </div>
             <form onSubmit={handleSaveUser} className="p-6">
               <div className="space-y-6">
-                {/* Name */}
                 <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Full Name
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -462,9 +451,10 @@ const ManageUsers = () => {
                     required
                   />
                 </div>
-                {/* Email */}
                 <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     name="email"
@@ -475,9 +465,10 @@ const ManageUsers = () => {
                     required
                   />
                 </div>
-                {/* Role */}
                 <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">Role</label>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Role
+                  </label>
                   <select
                     name="role"
                     value={formData.role}
@@ -488,9 +479,10 @@ const ManageUsers = () => {
                     <option value="admin">Admin</option>
                   </select>
                 </div>
-                {/* Gender */}
                 <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">Gender</label>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Gender
+                  </label>
                   <select
                     name="gender"
                     value={formData.gender}
@@ -531,54 +523,54 @@ const ManageUsers = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal (Tidak ada perubahan di sini) */}
+      {/* Delete Confirmation Modal */}
       {confirmDelete && (
-         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-             <div className="p-6 border-b border-gray-200">
-               <div className="flex items-center space-x-3">
-                 <div className="p-2 bg-red-100 rounded-full">
-                   <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                   </svg>
-                 </div>
-                 <div>
-                   <h2 className="text-xl font-bold text-red-600">Delete User</h2>
-                   <p className="text-gray-600">This action cannot be undone</p>
-                 </div>
-               </div>
-             </div>
-             <div className="p-6">
-               <p className="text-gray-700 mb-6">
-                 Are you sure you want to delete <strong className="text-gray-900">{confirmDelete.name}</strong>? 
-                 This will permanently remove their account and all associated data.
-               </p>
-               <div className="flex justify-end space-x-4">
-                 <button
-                   onClick={() => setConfirmDelete(null)}
-                   className="px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-700 font-medium transition-colors duration-200"
-                 >
-                   Cancel
-                 </button>
-                 <button
-                   onClick={() => handleDeleteUser(confirmDelete.id)}
-                   className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors duration-200 shadow-lg"
-                   disabled={isLoading}
-                 >
-                   {isLoading ? (
-                     <div className="flex items-center space-x-2">
-                       <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                       <span>Deleting...</span>
-                     </div>
-                   ) : (
-                     'Delete User'
-                   )}
-                 </button>
-               </div>
-             </div>
-           </div>
-         </div>
-       )}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-red-100 rounded-full">
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-red-600">Delete User</h2>
+                  <p className="text-gray-600">This action cannot be undone</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700 mb-6">
+                Are you sure you want to delete <strong className="text-gray-900">{confirmDelete.name}</strong>? 
+                This will permanently remove their account and all associated data.
+              </p>
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={() => setConfirmDelete(null)}
+                  className="px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-700 font-medium transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteUser(confirmDelete.id)}
+                  className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors duration-200 shadow-lg"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                      <span>Deleting...</span>
+                    </div>
+                  ) : (
+                    'Delete User'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 };

@@ -49,22 +49,14 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 export const recipeService = {
   getAllRecipes: async () => {
     try {
-      await delay(500);
-      return {
-        success: true,
-        data: mockRecipes
-      };
+      console.log('Fetching all recipes from API...');
+      const response = await fetch(`${API_BASE_URL}/recipes`);
+      const data = await response.json();
+      return data;
     } catch (error) {
-      // Fallback to real API if available
-      try {
-        const response = await fetch(`${API_BASE_URL}/recipes`);
-        return response.json();
-      } catch (apiError) {
-        return {
-          success: true,
-          data: mockRecipes
-        };
-      }
+      console.error('Error fetching recipes:', error);
+      console.log('Falling back to mock data...');
+      return mockRecipes;
     }
   },
 
