@@ -19,7 +19,7 @@ const AddUser = () => {
     gender: ''
   });
 
-  // Auto-hide success and error messages
+  // Auto-hide success and error messagesss
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => setSuccess(null), 5000);
@@ -34,7 +34,7 @@ const AddUser = () => {
     }
   }, [error]);
 
-  // Handle form input changes
+  // Handle form input changesss
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({

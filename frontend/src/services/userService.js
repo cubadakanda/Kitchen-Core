@@ -61,12 +61,12 @@ export const userService = {
       return { success: false, message: 'Failed to create user', error: error.message };
     }
   },
-  
-  // Update user
+    // Update user
   updateUser: async (id, userData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${id}`, {
-        method: 'PUT',
+      console.log(`Updating user ${id} with data:`, userData);
+        const response = await fetch(`${API_BASE_URL}/users/${id}`, {
+        method: 'PATCH',
         headers: {
           ...getAuthHeader(),
           'Content-Type': 'application/json'
@@ -74,10 +74,33 @@ export const userService = {
         body: JSON.stringify(userData)
       });
       
-      return await response.json();
+      if (!response.ok) {
+        console.error(`Server responded with status: ${response.status}`);
+        const errorText = await response.text();
+        try {
+          // Try to parse as JSON
+          const errorJson = JSON.parse(errorText);
+          return { 
+            success: false, 
+            message: errorJson.message || `Server error: ${response.status}`, 
+            error: errorJson 
+          };
+        } catch (e) {
+          // If not valid JSON, return text
+          return { 
+            success: false, 
+            message: `Server error: ${response.status}`, 
+            error: errorText 
+          };
+        }
+      }
+      
+      const result = await response.json();
+      console.log("API response for update:", result);
+      return result;
     } catch (error) {
       console.error(`Error updating user ${id}:`, error);
-      return { success: false, message: 'Failed to update user', error: error.message };
+      return { success: false, message: 'Failed to update user: ' + error.message, error: error.message };
     }
   },
   

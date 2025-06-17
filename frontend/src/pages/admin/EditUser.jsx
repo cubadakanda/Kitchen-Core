@@ -37,10 +37,9 @@ const EditUser = () => {
           setIsFetching(false);
           return;
         }
-        
-        // If no state data, fetch from API
+          // If no state data, fetch from API
         const response = await userService.getUserById(id);
-        if (response && !response.success === false) {
+        if (response && response.success !== false) {
           setFormData({
             name: response.name || '',
             email: response.email || '',
@@ -96,21 +95,25 @@ const EditUser = () => {
   // Handle save user (update)
   const handleSaveUser = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
+    setIsLoading(true);    try {
+      console.log("Submitting with form data:", formData);
+      console.log("User ID:", id);
+      
       const response = await userService.updateUser(id, formData);
-      if (response.success !== false) {
+      console.log("Response from update API:", response);
+      
+      // Fixed condition check
+      if (response && response.success !== false) {
         setSuccess('User updated successfully!');
         setTimeout(() => {
           navigate('/admin/users'); // Navigate back to users list after success
         }, 2000);
       } else {
-        setError(response.message || 'Failed to update user');
+        setError(response?.message || 'Failed to update user');
       }
     } catch (err) {
       setError('An error occurred while updating user data');
-      console.error(err);
+      console.error("Error in handleSaveUser:", err);
     } finally {
       setIsLoading(false);
     }
@@ -120,180 +123,229 @@ const EditUser = () => {
   if (!loading && (!currentUser || currentUser.role !== 'admin')) {
     return <Navigate to="/auth" replace />;
   }
-
   if (isFetching) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center min-h-[500px]">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            <p className="text-gray-500 text-lg">Loading user data...</p>
+        <div className="section has-text-centered">
+          <div className="container">
+            <div className="box p-6" style={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div>
+                <span className="icon is-large has-text-primary">
+                  <i className="fas fa-spinner fa-pulse fa-3x"></i>
+                </span>
+                <p className="mt-4 is-size-5 has-text-grey">Loading user data...</p>
+              </div>
+            </div>
           </div>
         </div>
       </AdminLayout>
     );
-  }
-  return (
+  }  return (
     <AdminLayout>
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Edit User</h1>
-              <p className="text-gray-600 mt-2">Update user information for {formData.name || 'this user'}</p>
-            </div>
-            <button
-              onClick={() => navigate('/admin/users')}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Users
-            </button>
-          </div>
-        </div>
-
-        {/* Alert Messages */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-red-800">{error}</span>
-            </div>
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-green-800">{success}</span>
-            </div>
-          </div>
-        )}
-
-        {/* User Form */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">User Information</h2>
-            <p className="text-sm text-gray-600">Update the user details below</p>
-          </div>
-          
-          <form onSubmit={handleSaveUser} className="p-6">
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Enter full name"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Enter email address"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Role *
-                  </label>
-                  <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    required
-                  >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Gender
-                  </label>
-                  <select
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  >
-                    <option value="">Not specified</option>
-                    <option value="laki-laki">Laki-laki</option>
-                    <option value="perempuan">Perempuan</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <div className="flex items-start">
-                  <svg className="w-5 h-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L12.732 4.5c-.77-.833-1.732-.833-2.5 0L2.232 17.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                  <div>
-                    <h4 className="text-sm font-medium text-amber-900">Password Information</h4>
-                    <p className="text-sm text-amber-700 mt-1">
-                      User passwords cannot be changed from this form. Users must change their own passwords through their profile settings.
-                    </p>
-                  </div>
-                </div>
+      <div className="container">
+        {/* Header Section */}
+        <section className="section is-small pb-0">
+          <div className="level">
+            <div className="level-left">
+              <div className="level-item">
+                <h1 className="title has-text-weight-bold is-2">
+                  <span className="icon-text">
+                    <span className="icon mr-3 has-text-primary">
+                      <i className="fas fa-user-edit"></i>
+                    </span>
+                    <span>Edit User</span>
+                  </span>
+                </h1>
               </div>
             </div>
-
-            <div className="flex items-center justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={() => navigate('/admin/users')}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Updating...
-                  </div>
-                ) : (
-                  'Update User'
-                )}
-              </button>
+            <div className="level-right">
+              <div className="level-item">
+                <button 
+                  className="button is-primary is-outlined is-medium"
+                  onClick={() => navigate('/admin/users')}
+                >
+                  <span className="icon">
+                    <i className="fas fa-arrow-left"></i>
+                  </span>
+                  <span>Back to Users</span>
+                </button>
+              </div>
             </div>
-          </form>
-        </div>
+          </div>
+          <p className="subtitle is-5 has-text-grey">
+            Update information for {formData.name || 'this user'}
+          </p>
+        </section>
+
+        {/* Notification Messages */}
+        <section className="section is-small py-4">
+          {success && (
+            <div className="notification is-success is-light">
+              <button className="delete" onClick={() => setSuccess(null)}></button>
+              <span className="icon-text">
+                <span className="icon">
+                  <i className="fas fa-check-circle"></i>
+                </span>
+                <span>{success}</span>
+              </span>
+            </div>
+          )}
+
+          {error && (
+            <div className="notification is-danger is-light">
+              <button className="delete" onClick={() => setError(null)}></button>
+              <span className="icon-text">
+                <span className="icon">
+                  <i className="fas fa-exclamation-circle"></i>
+                </span>
+                <span>{error}</span>
+              </span>
+            </div>
+          )}
+        </section>
+
+        {/* User Form Card */}
+        <section className="section">
+          <div className="columns">
+            <div className="column is-8 is-offset-2">
+              <div className="card admin-card">
+                <header className="card-header">
+                  <p className="card-header-title">
+                    <span className="icon-text">
+                      <span className="icon">
+                        <i className="fas fa-user-edit"></i>
+                      </span>
+                      <span>User Information</span>
+                    </span>
+                  </p>
+                </header>
+                
+                <div className="card-content">
+                  <form onSubmit={handleSaveUser}>
+                    <div className="field">
+                      <label className="label">Full Name *</label>
+                      <div className="control has-icons-left">
+                        <input 
+                          className="input" 
+                          type="text" 
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          placeholder="Enter full name"
+                          required
+                        />
+                        <span className="icon is-small is-left">
+                          <i className="fas fa-user"></i>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="field">
+                      <label className="label">Email Address *</label>
+                      <div className="control has-icons-left">
+                        <input 
+                          className="input" 
+                          type="email" 
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          placeholder="Enter email address"
+                          required
+                        />
+                        <span className="icon is-small is-left">
+                          <i className="fas fa-envelope"></i>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="columns">
+                      <div className="column">
+                        <div className="field">
+                          <label className="label">User Role *</label>
+                          <div className="control has-icons-left">
+                            <div className="select is-fullwidth">
+                              <select
+                                name="role"
+                                value={formData.role}
+                                onChange={handleInputChange}
+                                required
+                              >
+                                <option value="user">Regular User</option>
+                                <option value="admin">Administrator</option>
+                              </select>
+                            </div>
+                            <span className="icon is-small is-left">
+                              <i className="fas fa-user-tag"></i>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="column">
+                        <div className="field">
+                          <label className="label">Gender</label>
+                          <div className="control has-icons-left">
+                            <div className="select is-fullwidth">
+                              <select
+                                name="gender"
+                                value={formData.gender}
+                                onChange={handleInputChange}
+                              >
+                                <option value="">Not specified</option>
+                                <option value="laki-laki">Laki-laki</option>
+                                <option value="perempuan">Perempuan</option>
+                              </select>
+                            </div>
+                            <span className="icon is-small is-left">
+                              <i className="fas fa-venus-mars"></i>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="message is-warning is-light mt-5">
+                      <div className="message-body">
+                        <div className="is-flex">
+                          <span className="icon mr-2 has-text-warning">
+                            <i className="fas fa-exclamation-triangle"></i>
+                          </span>
+                          <div>
+                            <p className="has-text-weight-medium">Password Information</p>
+                            <p className="is-size-7 mt-1">User passwords cannot be changed from this form. Users must change their own passwords through their profile settings.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="field is-grouped is-grouped-right mt-5 pt-4" style={{ borderTop: '1px solid #eee' }}>
+                      <div className="control">
+                        <button 
+                          type="button" 
+                          className="button is-light"
+                          onClick={() => navigate('/admin/users')}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      <div className="control">
+                        <button 
+                          type="submit" 
+                          className={`button is-primary ${isLoading ? 'is-loading' : ''}`}
+                          disabled={isLoading}
+                        >
+                          <span className="icon">
+                            <i className="fas fa-save"></i>
+                          </span>
+                          <span>Update User</span>
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </AdminLayout>
   );
