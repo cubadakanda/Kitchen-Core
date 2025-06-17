@@ -1,25 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { userService } from '../../services/userService';
 
 const ManageUsers = () => {
+  const navigate = useNavigate();
   const { user: currentUser, loading } = useAuth();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [editingUser, setEditingUser] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    role: 'user',
-    gender: ''
-  });
   const [filterRole, setFilterRole] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
@@ -62,82 +55,18 @@ const ManageUsers = () => {
       return () => clearTimeout(timer);
     }
   }, [error]);
-
-  // Handle form input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // Open modal to add new user
+  // Navigate to add new user page
   const handleAddNewUser = () => {
-    setEditingUser(null);
-    setFormData({
-      name: '',
-      email: '',
-      role: 'user',
-      gender: ''
-    });
-    setShowModal(true);
-    setError(null);
-    setSuccess(null);
+    navigate('/admin/users/add');
   };
 
-  // Open modal to edit user
+  // Navigate to edit user page
   const handleEditUser = (user) => {
-    setEditingUser(user);
-    setFormData({
-      name: user.name || '',
-      email: user.email || '',
-      role: user.role || 'user',
-      gender: user.gender || ''
+    navigate(`/admin/users/edit/${user.id}`, { 
+      state: { 
+        userData: user 
+      } 
     });
-    setShowModal(true);
-    setError(null);
-    setSuccess(null);
-  };
-
-  // Handle save user (create or update)
-  const handleSaveUser = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      let response;
-      
-      if (editingUser) {
-        // Update existing user
-        response = await userService.updateUser(editingUser.id, formData);
-        if (response.success !== false) {
-          setUsers(users.map(u => u.id === editingUser.id ? { ...u, ...formData } : u));
-          setSuccess('User updated successfully!');
-          setShowModal(false);
-        } else {
-          setError(response.message || 'Failed to update user');
-        }
-      } else {
-        // Create new user
-        response = await userService.createUser({
-          ...formData,
-          password: 'password123' // Default password, should be changed by user
-        });
-        if (response.success !== false) {
-          fetchUsers(); // Refresh the list
-          setSuccess('User created successfully!');
-          setShowModal(false);
-        } else {
-          setError(response.message || 'Failed to create user');
-        }
-      }
-    } catch (err) {
-      setError('An error occurred while saving user data');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   // Handle delete user
@@ -422,106 +351,6 @@ const ManageUsers = () => {
           )}
         </div>
       </div>
-
-      {/* Add/Edit User Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {editingUser ? 'Edit User' : 'Add New User'}
-              </h2>
-              <p className="text-gray-600 mt-1">
-                {editingUser ? 'Update user information' : 'Create a new user account'}
-              </p>
-            </div>
-            <form onSubmit={handleSaveUser} className="p-6">
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    placeholder="Enter full name"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    placeholder="Enter email address"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Role
-                  </label>
-                  <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Gender
-                  </label>
-                  <select
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleInputChange}
-                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  >
-                    <option value="">Not specified</option>
-                    <option value="laki-laki">Laki-laki</option>
-                    <option value="perempuan">Perempuan</option>
-                  </select>
-                </div>
-              </div>
-              <div className="mt-8 flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-700 font-medium transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors duration-200 shadow-lg"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                      <span>Saving...</span>
-                    </div>
-                  ) : (
-                    editingUser ? 'Update User' : 'Create User'
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Delete Confirmation Modal */}
       {confirmDelete && (

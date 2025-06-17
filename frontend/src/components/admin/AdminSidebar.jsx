@@ -16,9 +16,8 @@ const AdminSidebar = () => {
   const menuItems = [
     {
       icon: (
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5a2 2 0 012-2h2a2 2 0 012 2v6H8V5z" />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
         </svg>
       ),
       label: 'Dashboard',
@@ -26,254 +25,118 @@ const AdminSidebar = () => {
     },
     {
       icon: (
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
-      label: 'Manage Recipes',
+      label: 'Recipes',
       path: '/admin/recipes'
     },
     {
       icon: (
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
         </svg>
       ),
-      label: 'Manage Categories',
+      label: 'Categories',
       path: '/admin/categories'
     },
     {
       icon: (
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
       ),
-      label: 'Manage Users',
+      label: 'Users',
       path: '/admin/users'
-    },
-    {
-      icon: (
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-        </svg>
-      ),
-      label: 'Recipe Ratings',
-      path: '/admin/ratings'
     }
   ];
 
   const isActive = (path) => location.pathname === path;
 
-  const sidebarStyle = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: isCollapsed ? '64px' : '256px',
-    height: '100vh',
-    background: 'linear-gradient(to bottom, #1f2937, #111827)',
-    color: 'white',
-    transition: 'width 0.3s ease',
-    boxShadow: '4px 0 6px -1px rgba(0, 0, 0, 0.1)',
-    zIndex: 1000,
-    display: 'flex',
-    flexDirection: 'column'
-  };
-
-  const toggleButtonStyle = {
-    position: 'absolute',
-    right: '-12px',
-    top: '24px',
-    backgroundColor: 'white',
-    color: '#6b7280',
-    borderRadius: '50%',
-    padding: '6px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-    border: 'none',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    zIndex: 1001
-  };
-
-  const headerStyle = {
-    padding: '24px',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px'
-  };
-
-  const logoStyle = {
-    width: '40px',
-    height: '40px',
-    background: 'linear-gradient(135deg, #f97316, #dc2626)',
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-  };
-
-  const userInfoStyle = {
-    padding: '16px 24px',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    display: isCollapsed ? 'none' : 'flex',
-    alignItems: 'center',
-    gap: '12px'
-  };
-
-  const userAvatarStyle = {
-    width: '40px',
-    height: '40px',
-    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-  };
-
-  const navStyle = {
-    flex: 1,
-    padding: '24px 16px',
-    overflowY: 'auto'
-  };
-
-  const menuItemStyle = (active) => ({
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '12px 16px',
-    borderRadius: '8px',
-    marginBottom: '8px',
-    border: 'none',
-    background: active 
-      ? 'linear-gradient(135deg, #f97316, #dc2626)' 
-      : 'transparent',
-    color: active ? 'white' : '#d1d5db',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    fontSize: '14px',
-    fontWeight: '500',
-    textAlign: 'left'
-  });
-
-  const footerStyle = {
-    padding: '16px',
-    borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-  };
-
   return (
-    <aside style={sidebarStyle}>
+    <div className={`fixed top-0 left-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-50 flex flex-col shadow-sm ${
+      isCollapsed ? 'w-16' : 'w-64'
+    }`}>
       {/* Toggle Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        style={toggleButtonStyle}
-        onMouseEnter={(e) => {
-          e.target.style.backgroundColor = '#f9fafb';
-          e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.backgroundColor = 'white';
-          e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-        }}
+        className="absolute -right-3 top-6 bg-white border border-gray-200 rounded-full p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
       >
-        <svg 
-          width="16" 
-          height="16" 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-          style={{ 
-            transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.3s ease'
-          }}
-        >
+        <svg className={`w-4 h-4 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
 
       {/* Header */}
-      <div style={headerStyle}>
-        <div style={logoStyle}>
-          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
-        </div>
-        {!isCollapsed && (
-          <div>
-            <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'white', margin: 0 }}>Kitchen Core</h2>
-            <p style={{ fontSize: '14px', color: '#d1d5db', margin: 0 }}>Admin Panel</p>
+      <div className="p-6 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
           </div>
-        )}
+          {!isCollapsed && (
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">Kitchen Core</h1>
+              <p className="text-xs text-gray-500">Admin Panel</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* User Info */}
-      <div style={userInfoStyle}>
-        <div style={userAvatarStyle}>
-          <span style={{ color: 'white', fontWeight: '600', fontSize: '14px' }}>
-            {user?.name?.charAt(0).toUpperCase() || 'A'}
-          </span>
+      {!isCollapsed && (
+        <div className="p-4 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-medium">
+              {user?.name?.charAt(0)?.toUpperCase() || 'A'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'Admin'}</p>
+              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            </div>
+          </div>
         </div>
-        <div>
-          <p style={{ color: 'white', fontWeight: '500', fontSize: '14px', margin: 0 }}>{user?.name || 'Admin'}</p>
-          <p style={{ color: '#9ca3af', fontSize: '12px', margin: 0 }}>{user?.email || 'admin@kitchen.com'}</p>
-        </div>
-      </div>
+      )}
 
       {/* Navigation */}
-      <nav style={navStyle}>
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-          {menuItems.map((item, index) => (
-            <li key={index}>
-              <button
-                onClick={() => navigate(item.path)}
-                style={menuItemStyle(isActive(item.path))}
-                onMouseEnter={(e) => {
-                  if (!isActive(item.path)) {
-                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                    e.target.style.color = 'white';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive(item.path)) {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.color = '#d1d5db';
-                  }
-                }}
-              >
-                <span>{item.icon}</span>
-                {!isCollapsed && <span>{item.label}</span>}
-              </button>
-            </li>
-          ))}
-        </ul>
+      <nav className="flex-1 p-4 space-y-1">
+        {menuItems.map((item) => (
+          <button
+            key={item.path}
+            onClick={() => navigate(item.path)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all group ${
+              isActive(item.path)
+                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+            }`}
+            title={isCollapsed ? item.label : ''}
+          >
+            <span className={`flex-shrink-0 ${isActive(item.path) ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}`}>
+              {item.icon}
+            </span>
+            {!isCollapsed && (
+              <span className="font-medium">{item.label}</span>
+            )}
+          </button>
+        ))}
       </nav>
 
-      {/* Footer */}
-      <div style={footerStyle}>
-        <button 
+      {/* Logout Button */}
+      <div className="p-4 border-t border-gray-100">
+        <button
           onClick={handleLogout}
-          style={{
-            ...menuItemStyle(false),
-            marginBottom: 0
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#dc2626';
-            e.target.style.color = 'white';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = 'transparent';
-            e.target.style.color = '#d1d5db';
-          }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-700 transition-all group"
+          title={isCollapsed ? 'Logout' : ''}
         >
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-gray-500 group-hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          {!isCollapsed && <span>Logout</span>}
+          {!isCollapsed && <span className="font-medium">Logout</span>}
         </button>
       </div>
-    </aside>
+    </div>
   );
 };
 

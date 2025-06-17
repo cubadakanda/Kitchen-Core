@@ -14,6 +14,8 @@ const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 const ManageRecipes = React.lazy(() => import('./pages/admin/ManageRecipes'));
 const ManageCategories = React.lazy(() => import('./pages/admin/ManageCategories'));
 const ManageUsers = React.lazy(() => import('./pages/admin/ManageUsers'));
+const AddUser = React.lazy(() => import('./pages/admin/AddUser'));
+const EditUser = React.lazy(() => import('./pages/admin/EditUser'));
 
 // Loading component for suspense fallback
 const Loading = () => (
@@ -100,10 +102,19 @@ function AppRoutes() {
             <AdminRoute>
               <ManageCategories />
             </AdminRoute>
-          } />
-          <Route path="/admin/users" element={
+          } />          <Route path="/admin/users" element={
             <AdminRoute>
               <ManageUsers />
+            </AdminRoute>
+          } />
+          <Route path="/admin/users/add" element={
+            <AdminRoute>
+              <AddUser />
+            </AdminRoute>
+          } />
+          <Route path="/admin/users/edit/:id" element={
+            <AdminRoute>
+              <EditUser />
             </AdminRoute>
           } />
           
