@@ -25,13 +25,13 @@
 
 .brand-icon {
   font-size: 1.5rem;
-  color: #0d3b66; /* Primary color from auth theme */
+  color: #432818; /* Primary color - dark brown */
 }
 
 .brand-name {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #0d3b66; /* Primary color from auth theme */
+  color: #432818; /* Primary color - dark brown */
 }
 
 .main-nav {
@@ -53,7 +53,7 @@
 
 .main-nav li a:hover,
 .main-nav li a.active {
-  color: #0d3b66;
+  color: #432818;
   font-weight: 700;
 }
 
@@ -74,7 +74,7 @@
 }
 
 .profile-link:hover {
-  color: #0d3b66;
+  color: #432818;
 }
 
 .profile-link img {
@@ -85,7 +85,7 @@
 }
 
 .logout-btn {
-  background-color: #0d3b66;
+  background-color: #432818;
   color: #faf0ca;
   border: none;
   border-radius: 9999px;

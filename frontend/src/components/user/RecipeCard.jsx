@@ -3,7 +3,22 @@ import React from 'react';
 const RecipeCard = ({ recipe, onView, onFavorite, isFavorited }) => {
   return (
     <div className="recipe-card">
-      <img src={recipe.image || '/default-recipe.jpg'} alt={recipe.title} />
+      <img 
+        src={recipe.image_url ? 
+          (recipe.image_url.startsWith('http') ? 
+            recipe.image_url : 
+            recipe.image_url.startsWith('/') ? 
+              recipe.image_url : 
+              `/${recipe.image_url}`
+          ) : 
+          '/default-recipe.jpg'
+        }
+        alt={recipe.title}
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = '/default-recipe.jpg';
+        }}
+      />
       <div className="recipe-card-content">
         <h3>{recipe.title}</h3>
         <p>{recipe.description}</p>

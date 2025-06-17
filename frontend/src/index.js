@@ -2,6 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/globals.css';
+import './styles/global-variables.css';
+import './styles/admin.css';
+import './styles/bulma-admin.css';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

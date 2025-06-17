@@ -28,7 +28,7 @@ const NewHome = () => {
   const [categories] = useState([
     { id: 1, name: 'All Recipes', icon: 'utensils', bgColor: 'bg-orange-100', textColor: 'text-orange-500' },
     { id: 2, name: 'Vegetarian', icon: 'leaf', bgColor: 'bg-green-100', textColor: 'text-green-500' },
-    { id: 3, name: 'Chicken', icon: 'drumstick-bite', bgColor: 'bg-blue-100', textColor: 'text-blue-500' },
+    { id: 3, name: 'Chicken', icon: 'drumstick-bite', bgColor: 'bg-blue-100', textColor: 'text-primary' },
     { id: 4, name: 'Seafood', icon: 'fish', bgColor: 'bg-red-100', textColor: 'text-red-500' },
     { id: 5, name: 'Desserts', icon: 'ice-cream', bgColor: 'bg-purple-100', textColor: 'text-purple-500' },
     { id: 6, name: 'Breakfast', icon: 'mug-hot', bgColor: 'bg-yellow-100', textColor: 'text-yellow-500' },
@@ -149,8 +149,7 @@ const NewHome = () => {
                 </div>
                 <div className="p-4">
                   <div className="flex justify-between items-start mb-2">
-                    <h4 className="text-xl font-semibold text-gray-800">{recipe.title}</h4>
-                    <span className={`${recipe.category_name === 'Vegetarian' ? 'bg-green-100 text-green-800' : recipe.category_name === 'Italian' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'} text-xs px-2 py-1 rounded-full`}>
+                    <h4 className="text-xl font-semibold text-gray-800">{recipe.title}</h4>                    <span className="bg-blue-100 text-primary text-xs px-2 py-1 rounded-full">
                       {recipe.category_name || 'Main Dish'}
                     </span>
                   </div>

@@ -27,6 +27,28 @@ app.use(cors({
 app.use(express.json());
 
 // Add API prefix to all routes
+// API Test route
+app.get('/api/test', (req, res) => {
+    res.json({
+        status: 'success',
+        message: 'API is running',
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Image URL test route to check paths
+app.get('/api/image-test', (req, res) => {
+    res.json({
+        status: 'success',
+        message: 'Image paths test',
+        imagePaths: {
+            absolute: 'http://localhost:5000/images/recipes/test.jpg',
+            relative: '/images/recipes/test.jpg',
+            noLeadingSlash: 'images/recipes/test.jpg'
+        }
+    });
+});
+
 app.use('/api', UserRoute);
 app.use('/api', CategoryRoute);
 app.use('/api', RecipeRoute);
@@ -48,6 +70,23 @@ const initDb = async () => {
         
         // Log all available tables
         console.log('Available tables:', Object.keys(db.models));
+        
+        // Check if we need to seed initial data
+        const tableChecks = await Promise.all([
+            db.query("SELECT COUNT(*) as count FROM categories"),
+            db.query("SELECT COUNT(*) as count FROM users"),
+            db.query("SELECT COUNT(*) as count FROM recipes")
+        ]);
+        
+        const categoriesCount = tableChecks[0][0][0].count;
+        const usersCount = tableChecks[1][0][0].count;
+        const recipesCount = tableChecks[2][0][0].count;
+        
+        console.log(`Database stats - Categories: ${categoriesCount}, Users: ${usersCount}, Recipes: ${recipesCount}`);
+        
+        if (categoriesCount === 0 || usersCount === 0 || recipesCount === 0) {
+            console.log("Database appears to be empty. You may want to run 'npm run seed' to add initial data.");
+        }
         
         // If we reach here, the database is properly configured
         return true;

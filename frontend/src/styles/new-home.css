@@ -1,8 +1,8 @@
-/* Color variables to match auth theme */
+/* Color variables to match updated theme */
 :root {
-  --primary-color: #0d3b66;     /* Dark blue from auth */
-  --primary-hover: #0a2e50;     /* Darker blue for hover state */
-  --accent-color: #faf0ca;      /* Light cream from auth */
+  --primary-color: #432818;     /* Dark brown */
+  --primary-hover: #33200e;     /* Darker brown for hover state */
+  --accent-color: #faf0ca;      /* Light cream */
   --accent-dark: #f5e7a3;       /* Slightly darker cream */
   --text-dark: #1f2937;         /* For main text */
   --text-light: #f8fafc;        /* For text on dark backgrounds */

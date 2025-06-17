@@ -3,9 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 import SlidingAuth from './components/auth/SlidingAuth';
-import './styles/admin.css';
-// Bulma CSS framework for admin dashboard
-import './styles/bulma-admin.css'; // We'll create this file to customize Bulma for admin
 
 // Lazy load components for better performance
 const Home = React.lazy(() => import('./pages/user/NewHome')); // Using the new home component
@@ -14,6 +11,8 @@ const Recipes = React.lazy(() => import('./pages/user/Recipes'));
 const RecipeDetail = React.lazy(() => import('./pages/user/RecipeDetail'));
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 const ManageRecipes = React.lazy(() => import('./pages/admin/ManageRecipes'));
+const AddRecipe = React.lazy(() => import('./pages/admin/AddRecipe'));
+const EditRecipe = React.lazy(() => import('./pages/admin/EditRecipe'));
 const ManageCategories = React.lazy(() => import('./pages/admin/ManageCategories'));
 const ManageUsers = React.lazy(() => import('./pages/admin/ManageUsers'));
 const AddUser = React.lazy(() => import('./pages/admin/AddUser'));
@@ -99,22 +98,17 @@ function AppRoutes() {
             <AdminRoute>
               <ManageRecipes />
             </AdminRoute>
-          } />
-          <Route path="/admin/recipes/add" element={
+          } />          <Route path="/admin/recipes/add" element={
             <AdminRoute>
               <React.Suspense fallback={<Loading />}>
-                <div className="notification is-info has-text-centered">
-                  <p className="subtitle">Add Recipe page will be implemented soon</p>
-                </div>
+                <AddRecipe />
               </React.Suspense>
             </AdminRoute>
           } />
           <Route path="/admin/recipes/edit/:id" element={
             <AdminRoute>
               <React.Suspense fallback={<Loading />}>
-                <div className="notification is-info has-text-centered">
-                  <p className="subtitle">Edit Recipe page will be implemented soon</p>
-                </div>
+                <EditRecipe />
               </React.Suspense>
             </AdminRoute>
           } />

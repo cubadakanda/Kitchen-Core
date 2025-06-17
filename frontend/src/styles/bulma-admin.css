@@ -4,11 +4,11 @@
 /* Import Font Awesome for icons */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css');
 
-/* Custom variables to match our existing theme */
+/* Custom variables to match our updated theme */
 :root {
-  --primary-color: #0d3b66;     /* Dark blue from auth */
-  --primary-hover: #0a2e50;     /* Darker blue for hover state */
-  --accent-color: #faf0ca;      /* Light cream from auth */
+  --primary-color: #432818;     /* Dark brown */
+  --primary-hover: #33200e;     /* Darker brown for hover state */
+  --accent-color: #faf0ca;      /* Light cream */
   --accent-dark: #f5e7a3;       /* Slightly darker cream */
   --text-dark: #1f2937;         /* For main text */
   --text-light: #f8fafc;        /* For text on dark backgrounds */
@@ -42,7 +42,7 @@
 /* Admin Sidebar */
 .admin-sidebar {
   width: var(--sidebar-width);
-  background: linear-gradient(to bottom, var(--primary-color), #0a2e50);
+  background: linear-gradient(to bottom, var(--primary-color), var(--primary-hover));
   color: var(--accent-color);
   position: fixed;
   left: 0;
@@ -203,6 +203,53 @@
 
 .admin-card-content {
   padding: 1.5rem;
+}
+
+/* Recipe card styling */
+.card.admin-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.card.admin-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.card-image-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.card-footer-item.button {
+  border-radius: 0;
+  border: none;
+  border-top: 1px solid #eee;
+  transition: background-color 0.3s;
+}
+
+.card-footer-item.button:first-child {
+  border-bottom-left-radius: 0.25rem;
+}
+
+.card-footer-item.button:last-child {
+  border-bottom-right-radius: 0.25rem;
+}
+
+.card-footer-item.button.has-text-info:hover {
+  background-color: #eef6fc;
+}
+
+.card-footer-item.button.has-text-danger:hover {
+  background-color: #feecf0;
 }
 
 /* Dashboard Stats Cards */

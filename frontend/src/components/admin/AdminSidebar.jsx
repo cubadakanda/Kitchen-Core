@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -6,10 +6,18 @@ const AdminSidebar = ({ collapsed }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
+  const [expandedMenus, setExpandedMenus] = useState({});
+  
   const handleLogout = () => {
     logout();
     navigate('/auth');
+  };
+  
+  const toggleSubmenu = (index) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
   };
   
   // Enhanced menu items with submenu support
@@ -48,153 +56,152 @@ const AdminSidebar = ({ collapsed }) => {
           label: 'All Users',
           path: '/admin/users'
         },
-        { 
+        {
           label: 'Add User',
           path: '/admin/users/add'
         }
       ]
+    },
+    {
+      icon: "chart-bar",
+      label: 'Analytics',
+      path: '/admin/analytics'
+    },
+    {
+      icon: "cog",
+      label: 'Settings',
+      path: '/admin/settings'
     }
   ];
-  const isActive = (path) => {
-    // Exact matching for main paths, partial matching for subpaths
-    if (path === '/admin/recipes' || path === '/admin/users') {
-      return location.pathname === path;
+
+  // Function to check if a menu item or its subitems are active
+  const isActive = (item) => {
+    if (location.pathname === item.path) return true;
+    
+    if (item.subItems) {
+      return item.subItems.some(subItem => location.pathname === subItem.path);
     }
-    return location.pathname.startsWith(path);
+    
+    return false;
   };
 
   return (
-    <aside className={`admin-sidebar ${collapsed ? 'is-collapsed' : ''}`}>
-      {/* Brand Logo and Name */}
-      <div className="p-4 has-text-centered">
-        {!collapsed && (
-          <h2 className="title is-5 has-text-white mb-2">Kitchen Core</h2>
-        )}
-        <figure className="image is-48x48 mx-auto">
-          <img 
-            src="/logo.svg" 
-            alt="Kitchen Core Logo" 
-            className="is-rounded" 
-            style={{ background: 'white', padding: '5px', transition: 'transform 0.3s ease' }}
-            onMouseOver={(e) => {e.currentTarget.style.transform = 'scale(1.1)'}}
-            onMouseOut={(e) => {e.currentTarget.style.transform = 'scale(1)'}}
-          />
-        </figure>
+    <div className={`admin-sidebar ${collapsed ? 'is-collapsed' : ''}`} style={{ 
+      width: collapsed ? '70px' : '250px',
+      backgroundColor: 'var(--primary-color)'
+    }}>
+      {/* Sidebar Header/Brand */}
+      <div className="sidebar-brand" style={{ 
+        padding: collapsed ? '1rem 0' : '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: collapsed ? 'center' : 'flex-start',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+      }}>
+        <div className="sidebar-logo" style={{ 
+          fontSize: '1.5rem',
+          color: 'var(--secondary-color)',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <i className="fas fa-utensils mr-2"></i>
+          {!collapsed && <span>Kitchen Core</span>}
+        </div>
       </div>
       
-      {/* Navigation Menu */}
-      <aside className="menu p-4">
-        <p className="menu-label has-text-light">Main Menu</p>
-        <ul className="menu-list">
-          {menuItems.map((item) => (
-            <li key={item.path}>
-              {item.subItems ? (
-                <div>
-                  <Link 
-                    to={item.path}
-                    className={isActive(item.path) ? 'is-active' : ''}
-                  >
-                    <span className="icon">
-                      <i className={`fas fa-${item.icon}`}></i>
-                    </span>
-                    {!collapsed && (
-                      <>
-                        <span className="mr-2">{item.label}</span>
-                        <span className="icon is-small">
-                          <i className="fas fa-chevron-down" aria-hidden="true"></i>
-                        </span>
-                      </>
+      {/* Sidebar Menu Items */}
+      <div className="sidebar-menu" style={{ flex: '1' }}>
+        <ul style={{ listStyle: 'none', padding: 0, margin: '1rem 0' }}>
+          {menuItems.map((item, index) => (
+            <li key={index}>
+              {/* Main menu item */}
+              <div 
+                className={`sidebar-menu-item ${isActive(item) ? 'is-active' : ''}`}
+                onClick={() => item.subItems ? toggleSubmenu(index) : navigate(item.path)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '0.75rem 1rem',
+                  color: isActive(item) ? 'var(--secondary-color)' : 'rgba(255, 255, 255, 0.8)',
+                  cursor: 'pointer',
+                  borderLeft: isActive(item) ? '4px solid var(--secondary-color)' : '4px solid transparent',
+                  backgroundColor: isActive(item) ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  textDecoration: 'none',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <span className="icon" style={{ marginRight: collapsed ? '0' : '0.75rem' }}>
+                  <i className={`fas fa-${item.icon}`}></i>
+                </span>
+                {!collapsed && (
+                  <>
+                    <span style={{ flex: 1 }}>{item.label}</span>
+                    {item.subItems && (
+                      <span className="icon is-small">
+                        <i className={`fas fa-angle-${expandedMenus[index] ? 'down' : 'right'}`}></i>
+                      </span>
                     )}
-                  </Link>
-                  
-                  {!collapsed && item.subItems && (
-                    <ul>
-                      {item.subItems.map((subItem) => (
-                        <li key={subItem.path}>
-                          <Link 
-                            to={subItem.path}
-                            className={location.pathname === subItem.path ? 'is-active' : ''}
-                          >
-                            <span className="icon is-small">
-                              <i className="fas fa-circle fa-xs"></i>
-                            </span>
-                            <span>{subItem.label}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ) : (
-                <Link 
-                  to={item.path} 
-                  className={location.pathname === item.path ? 'is-active' : ''}
-                >
-                  <span className="icon">
-                    <i className={`fas fa-${item.icon}`}></i>
-                  </span>
-                  {!collapsed && <span>{item.label}</span>}
-                </Link>
+                  </>
+                )}
+              </div>
+              
+              {/* Submenu items */}
+              {!collapsed && item.subItems && expandedMenus[index] && (
+                <ul style={{ 
+                  listStyle: 'none', 
+                  padding: '0 0 0 2.5rem',
+                  margin: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.1)'
+                }}>
+                  {item.subItems.map((subItem, subIndex) => (
+                    <li key={subIndex}>
+                      <Link
+                        to={subItem.path}
+                        style={{
+                          display: 'block',
+                          padding: '0.5rem 1rem',
+                          color: location.pathname === subItem.path 
+                            ? 'var(--secondary-color)' 
+                            : 'rgba(255, 255, 255, 0.7)',
+                          textDecoration: 'none',
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        {subItem.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               )}
             </li>
           ))}
         </ul>
-        
-        {!collapsed && (
-          <>
-            <p className="menu-label has-text-light mt-6">Account</p>
-            <ul className="menu-list">
-              <li>
-                <a onClick={handleLogout} className="has-text-danger-light">
-                  <span className="icon">
-                    <i className="fas fa-sign-out-alt"></i>
-                  </span>
-                  <span>Logout</span>
-                </a>
-              </li>
-            </ul>
-          </>
-        )}
-      </aside>
+      </div>
       
-      {/* Collapsed View Logout */}
-      {collapsed && (
-        <div className="has-text-centered mt-6">
-          <button 
-            onClick={handleLogout} 
-            className="button is-small is-danger is-outlined is-rounded"
-            title="Logout"
-          >
-            <span className="icon">
-              <i className="fas fa-sign-out-alt"></i>
-            </span>
-          </button>
-        </div>
-      )}
-        {/* User Info at Bottom */}
-      {!collapsed && user && (
-        <div className="user-profile p-4 mt-auto border-t border-gray-700">
-          <div className="media">
-            <div className="media-left">
-              <figure className="image is-40x40">
-                <img 
-                  src={user.avatar || 'https://bulma.io/images/placeholders/128x128.png'} 
-                  alt={user.name} 
-                  className="is-rounded admin-avatar"
-                />
-              </figure>
-            </div>
-            <div className="media-content">
-              <p className="has-text-white is-size-6 has-text-weight-semibold">{user.name}</p>
-              <div className="is-flex is-align-items-center">
-                <span className="admin-badge"></span>
-                <p className="has-text-grey-lighter is-size-7 ml-1">Admin</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </aside>
+      {/* Sidebar Footer */}
+      <div className="sidebar-footer" style={{
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        padding: '1rem',
+        textAlign: collapsed ? 'center' : 'left'
+      }}>
+        <button 
+          onClick={handleLogout} 
+          className="button is-small is-outlined"
+          style={{
+            backgroundColor: 'transparent',
+            border: '1px solid var(--secondary-color)',
+            color: 'var(--secondary-color)',
+            width: collapsed ? '100%' : 'auto'
+          }}
+        >
+          <span className="icon">
+            <i className="fas fa-sign-out-alt"></i>
+          </span>
+          {!collapsed && <span>Logout</span>}
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -51,10 +51,10 @@
   font-size: 1rem;
 }
 
-.search-button {
-  position: absolute;
+.search-button {  position: absolute;
   right: 0.5rem;
-  top: 0.5rem;  background-color: #0d3b66;
+  top: 0.5rem;  
+  background-color: #432818;
   color: #faf0ca;
   border: none;
   border-radius: 9999px;
@@ -118,14 +118,14 @@
 }
 
 .view-all {
-  color: #0d3b66;
+  color: #432818;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s;
 }
 
 .view-all:hover {
-  color: #0a2e50;
+  color: #33200e;
 }
 
 .recipes-grid {
@@ -166,10 +166,11 @@
   transform: scale(1.05);
 }
 
-.recipe-time {  position: absolute;
+.recipe-time {  
+  position: absolute;
   top: 1rem;
   right: 1rem;
-  background-color: #0d3b66;
+  background-color: #432818;
   color: #faf0ca;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
@@ -316,7 +317,8 @@
 }
 
 /* Newsletter Section */
-.newsletter-section {  background-color: #0d3b66;
+.newsletter-section {  
+  background-color: #432818;
   color: #faf0ca;
   padding: 4rem 2rem;
   text-align: center;
