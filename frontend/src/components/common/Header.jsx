@@ -1,30 +1,65 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import '../../styles/header.css';
 
 const Header = ({ user, onLogout }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    }
+    navigate('/auth');
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   return (
-    <header className="header">
+    <header className="site-header">
       <div className="header-container">
-        <div className="logo">
-          <h1>Kitchen Core</h1>
-        </div>
-        <nav className="nav">
+        <Link to="/" className="brand">
+          <i className="fas fa-utensils brand-icon"></i>
+          <span className="brand-name">Kitchen Core</span>
+        </Link>
+        
+        <nav className={`main-nav ${mobileMenuOpen ? 'mobile-open' : ''}`}>
           <ul>
-            <li>Home</li>
-            <li>Recipes</li>
-            <li>Categories</li>
+            <li><Link to="/" className="active">Home</Link></li>
+            <li><Link to="/recipes">Recipes</Link></li>
+            <li><Link to="/recipes?view=categories">Categories</Link></li>
+            <li><Link to="/about">About</Link></li>
+            <li><Link to="/contact">Contact</Link></li>
           </ul>
         </nav>
-        <div className="user-actions">
+        
+        <div className="user-menu">
+          <button className="toggle-menu" onClick={toggleMobileMenu}>
+            <i className="fas fa-bars"></i>
+          </button>
+          
           {user ? (
-            <div>
-              <span>Welcome, {user.name}</span>
-              <button onClick={onLogout}>Logout</button>
-            </div>
+            <>
+              <Link to="/profile" className="profile-link">
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name} />
+                ) : (
+                  <i className="fas fa-user-circle"></i>
+                )}
+                <span className="hidden md:inline">{user.name}</span>
+              </Link>
+              <button onClick={handleLogout} className="logout-btn">
+                <i className="fas fa-sign-out-alt"></i>
+                <span className="hidden md:inline">Logout</span>
+              </button>
+            </>
           ) : (
-            <div>
-              <button>Login</button>
-              <button>Register</button>
-            </div>
+            <Link to="/auth" className="logout-btn">
+              <i className="fas fa-user"></i>
+              <span>Sign In</span>
+            </Link>
           )}
         </div>
       </div>

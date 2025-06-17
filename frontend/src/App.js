@@ -4,7 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import SlidingAuth from './components/auth/SlidingAuth';
 
 // Lazy load components for better performance
-const Home = React.lazy(() => import('./pages/user/Home'));
+const Home = React.lazy(() => import('./pages/user/NewHome')); // Using the new home component
 const Profile = React.lazy(() => import('./pages/user/Profile'));
 const Recipes = React.lazy(() => import('./pages/user/Recipes'));
 const RecipeDetail = React.lazy(() => import('./pages/user/RecipeDetail'));
@@ -40,10 +40,9 @@ function App() {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/recipes" element={<ManageRecipes />} />
             <Route path="/admin/categories" element={<ManageCategories />} />
-            
-            {/* Redirect to auth as default */}
-            <Route path="/" element={<Navigate to="/auth" replace />} />
-            <Route path="*" element={<Navigate to="/auth" replace />} />
+              {/* Redirect to home as default */}
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>
         </React.Suspense>
       </Router>
