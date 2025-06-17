@@ -1,142 +1,200 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ collapsed }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate('/auth');
   };
-
+  
+  // Enhanced menu items with submenu support
   const menuItems = [
     {
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-        </svg>
-      ),
+      icon: "tachometer-alt",
       label: 'Dashboard',
       path: '/admin/dashboard'
     },
     {
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
+      icon: "utensils",
       label: 'Recipes',
-      path: '/admin/recipes'
+      path: '/admin/recipes',
+      subItems: [
+        { 
+          label: 'All Recipes',
+          path: '/admin/recipes'
+        },
+        { 
+          label: 'Add Recipe',
+          path: '/admin/recipes/add'
+        }
+      ]
     },
     {
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-        </svg>
-      ),
+      icon: "tags",
       label: 'Categories',
       path: '/admin/categories'
     },
     {
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ),
+      icon: "users",
       label: 'Users',
-      path: '/admin/users'
+      path: '/admin/users',
+      subItems: [
+        { 
+          label: 'All Users',
+          path: '/admin/users'
+        },
+        { 
+          label: 'Add User',
+          path: '/admin/users/add'
+        }
+      ]
     }
   ];
-
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    // Exact matching for main paths, partial matching for subpaths
+    if (path === '/admin/recipes' || path === '/admin/users') {
+      return location.pathname === path;
+    }
+    return location.pathname.startsWith(path);
+  };
 
   return (
-    <div className={`fixed top-0 left-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-50 flex flex-col shadow-sm ${
-      isCollapsed ? 'w-16' : 'w-64'
-    }`}>
-      {/* Toggle Button */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-6 bg-white border border-gray-200 rounded-full p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-      >
-        <svg className={`w-4 h-4 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      {/* Header */}
-      <div className="p-6 border-b border-gray-100">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          {!isCollapsed && (
-            <div>
-              <h1 className="text-lg font-bold text-gray-900">Kitchen Core</h1>
-              <p className="text-xs text-gray-500">Admin Panel</p>
-            </div>
-          )}
-        </div>
+    <aside className={`admin-sidebar ${collapsed ? 'is-collapsed' : ''}`}>
+      {/* Brand Logo and Name */}
+      <div className="p-4 has-text-centered">
+        {!collapsed && (
+          <h2 className="title is-5 has-text-white mb-2">Kitchen Core</h2>
+        )}
+        <figure className="image is-48x48 mx-auto">
+          <img 
+            src="/logo.svg" 
+            alt="Kitchen Core Logo" 
+            className="is-rounded" 
+            style={{ background: 'white', padding: '5px', transition: 'transform 0.3s ease' }}
+            onMouseOver={(e) => {e.currentTarget.style.transform = 'scale(1.1)'}}
+            onMouseOut={(e) => {e.currentTarget.style.transform = 'scale(1)'}}
+          />
+        </figure>
       </div>
-
-      {/* User Info */}
-      {!isCollapsed && (
-        <div className="p-4 border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-medium">
-              {user?.name?.charAt(0)?.toUpperCase() || 'A'}
+      
+      {/* Navigation Menu */}
+      <aside className="menu p-4">
+        <p className="menu-label has-text-light">Main Menu</p>
+        <ul className="menu-list">
+          {menuItems.map((item) => (
+            <li key={item.path}>
+              {item.subItems ? (
+                <div>
+                  <Link 
+                    to={item.path}
+                    className={isActive(item.path) ? 'is-active' : ''}
+                  >
+                    <span className="icon">
+                      <i className={`fas fa-${item.icon}`}></i>
+                    </span>
+                    {!collapsed && (
+                      <>
+                        <span className="mr-2">{item.label}</span>
+                        <span className="icon is-small">
+                          <i className="fas fa-chevron-down" aria-hidden="true"></i>
+                        </span>
+                      </>
+                    )}
+                  </Link>
+                  
+                  {!collapsed && item.subItems && (
+                    <ul>
+                      {item.subItems.map((subItem) => (
+                        <li key={subItem.path}>
+                          <Link 
+                            to={subItem.path}
+                            className={location.pathname === subItem.path ? 'is-active' : ''}
+                          >
+                            <span className="icon is-small">
+                              <i className="fas fa-circle fa-xs"></i>
+                            </span>
+                            <span>{subItem.label}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : (
+                <Link 
+                  to={item.path} 
+                  className={location.pathname === item.path ? 'is-active' : ''}
+                >
+                  <span className="icon">
+                    <i className={`fas fa-${item.icon}`}></i>
+                  </span>
+                  {!collapsed && <span>{item.label}</span>}
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+        
+        {!collapsed && (
+          <>
+            <p className="menu-label has-text-light mt-6">Account</p>
+            <ul className="menu-list">
+              <li>
+                <a onClick={handleLogout} className="has-text-danger-light">
+                  <span className="icon">
+                    <i className="fas fa-sign-out-alt"></i>
+                  </span>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </>
+        )}
+      </aside>
+      
+      {/* Collapsed View Logout */}
+      {collapsed && (
+        <div className="has-text-centered mt-6">
+          <button 
+            onClick={handleLogout} 
+            className="button is-small is-danger is-outlined is-rounded"
+            title="Logout"
+          >
+            <span className="icon">
+              <i className="fas fa-sign-out-alt"></i>
+            </span>
+          </button>
+        </div>
+      )}
+        {/* User Info at Bottom */}
+      {!collapsed && user && (
+        <div className="user-profile p-4 mt-auto border-t border-gray-700">
+          <div className="media">
+            <div className="media-left">
+              <figure className="image is-40x40">
+                <img 
+                  src={user.avatar || 'https://bulma.io/images/placeholders/128x128.png'} 
+                  alt={user.name} 
+                  className="is-rounded admin-avatar"
+                />
+              </figure>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'Admin'}</p>
-              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            <div className="media-content">
+              <p className="has-text-white is-size-6 has-text-weight-semibold">{user.name}</p>
+              <div className="is-flex is-align-items-center">
+                <span className="admin-badge"></span>
+                <p className="has-text-grey-lighter is-size-7 ml-1">Admin</p>
+              </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
-        {menuItems.map((item) => (
-          <button
-            key={item.path}
-            onClick={() => navigate(item.path)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all group ${
-              isActive(item.path)
-                ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-            }`}
-            title={isCollapsed ? item.label : ''}
-          >
-            <span className={`flex-shrink-0 ${isActive(item.path) ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}`}>
-              {item.icon}
-            </span>
-            {!isCollapsed && (
-              <span className="font-medium">{item.label}</span>
-            )}
-          </button>
-        ))}
-      </nav>
-
-      {/* Logout Button */}
-      <div className="p-4 border-t border-gray-100">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-700 transition-all group"
-          title={isCollapsed ? 'Logout' : ''}
-        >
-          <svg className="w-5 h-5 text-gray-500 group-hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          {!isCollapsed && <span className="font-medium">Logout</span>}
-        </button>
-      </div>
-    </div>
+    </aside>
   );
 };
 

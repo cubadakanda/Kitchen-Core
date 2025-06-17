@@ -4,6 +4,8 @@ import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 import SlidingAuth from './components/auth/SlidingAuth';
 import './styles/admin.css';
+// Bulma CSS framework for admin dashboard
+import './styles/bulma-admin.css'; // We'll create this file to customize Bulma for admin
 
 // Lazy load components for better performance
 const Home = React.lazy(() => import('./pages/user/NewHome')); // Using the new home component
@@ -56,6 +58,7 @@ const AdminRoute = ({ children }) => {
 };
 
 function AppRoutes() {
+  // Simplified routing - always direct to auth first
   return (
     <Router>
       <React.Suspense fallback={<Loading />}>
@@ -92,17 +95,34 @@ function AppRoutes() {
             <AdminRoute>
               <AdminDashboard />
             </AdminRoute>
-          } />
-          <Route path="/admin/recipes" element={
+          } />          <Route path="/admin/recipes" element={
             <AdminRoute>
               <ManageRecipes />
+            </AdminRoute>
+          } />
+          <Route path="/admin/recipes/add" element={
+            <AdminRoute>
+              <React.Suspense fallback={<Loading />}>
+                <div className="notification is-info has-text-centered">
+                  <p className="subtitle">Add Recipe page will be implemented soon</p>
+                </div>
+              </React.Suspense>
+            </AdminRoute>
+          } />
+          <Route path="/admin/recipes/edit/:id" element={
+            <AdminRoute>
+              <React.Suspense fallback={<Loading />}>
+                <div className="notification is-info has-text-centered">
+                  <p className="subtitle">Edit Recipe page will be implemented soon</p>
+                </div>
+              </React.Suspense>
             </AdminRoute>
           } />
           <Route path="/admin/categories" element={
             <AdminRoute>
               <ManageCategories />
             </AdminRoute>
-          } />          <Route path="/admin/users" element={
+          } /><Route path="/admin/users" element={
             <AdminRoute>
               <ManageUsers />
             </AdminRoute>
@@ -111,14 +131,13 @@ function AppRoutes() {
             <AdminRoute>
               <AddUser />
             </AdminRoute>
-          } />
-          <Route path="/admin/users/edit/:id" element={
+          } />          <Route path="/admin/users/edit/:id" element={
             <AdminRoute>
               <EditUser />
             </AdminRoute>
           } />
           
-          {/* Redirect to auth as default */}
+          {/* Always redirect to auth page as default */}
           <Route path="/" element={<Navigate to="/auth" replace />} />
           <Route path="*" element={<Navigate to="/auth" replace />} />
         </Routes>
@@ -126,6 +145,9 @@ function AppRoutes() {
     </Router>
   );
 }
+
+// Cleanup local storage before app loads
+
 
 function App() {
   return (

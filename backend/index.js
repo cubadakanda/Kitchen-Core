@@ -33,27 +33,59 @@ app.use('/api', RecipeRoute);
 app.use('/api', UserFavoriteRoute);
 app.use('/api', RecipeRatingRoute);
 
-// Database sync
+// Database sync with better error handling
 const initDb = async () => {
     try {
         // Test database connection
+        console.log('Attempting to connect to the database...');
         await db.authenticate();
         console.log('Database connection has been established successfully.');
         
-        // Sync database
-        await db.sync();
-        console.log("Database synchronized");
+        // Sync database - creating tables if they don't exist
+        console.log('Synchronizing database models...');
+        await db.sync({ alter: true });
+        console.log("Database synchronized successfully.");
         
         // Log all available tables
         console.log('Available tables:', Object.keys(db.models));
         
+        // If we reach here, the database is properly configured
+        return true;
     } catch (error) {
         console.error("Error with database:", error);
-        console.error("Make sure MySQL is running and database 'db_web' exists");
+        
+        if (error.name === 'SequelizeConnectionRefusedError') {
+            console.error("Connection to the database was refused. Make sure MySQL is running.");
+        } else if (error.name === 'SequelizeConnectionError') {
+            console.error("Failed to connect to the database. Check your credentials in Database.js.");
+        } else if (error.name === 'SequelizeDatabaseError') {
+            console.error("Database 'db_web' might not exist. Create it or check Database.js.");
+        } else {
+            console.error("Unexpected database error:", error.message);
+        }
+        
+        console.error("Fix the database issues before proceeding.");
+        return false;
     }
 };
 
-// Initialize database then start server
-initDb().then(() => {
-    app.listen(5000, () => console.log('Server up and running on port 5000'));
+// Initialize database then start server with better error handling
+initDb().then((dbSuccess) => {
+    if (dbSuccess) {
+        app.listen(5000, () => {
+            console.log('✅ Server up and running on port 5000');
+            console.log('📂 API endpoints available at http://localhost:5000/api');
+        });
+    } else {
+        // We'll still start the server even if database initialization fails
+        // This allows API endpoints to return appropriate error messages
+        console.warn('⚠️ Starting server with database issues - API will use fallback data');
+        app.listen(5000, () => {
+            console.log('⚠️ Server running on port 5000 with limited functionality');
+            console.log('📂 Fix database issues for full functionality');
+        });
+    }
+}).catch(err => {
+    console.error('💥 Fatal error during initialization:', err);
+    process.exit(1);
 });
