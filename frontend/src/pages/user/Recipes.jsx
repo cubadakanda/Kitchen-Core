@@ -6,6 +6,8 @@ import SharePopup from '../../components/common/SharePopup';
 import LazyImage from '../../components/common/LazyImage';
 import useRecipes from '../../hooks/useRecipes';
 import { fetchCategories } from '../../services/categoryService';
+import { getAverageRating } from '../../services/ratingService';
+import { favoriteService } from '../../services/favoriteService';
 import { getSafeImageUrl, getFullImageUrl } from '../../utils/imageUtils';
 import '../../styles/bulma-home.css';
 
@@ -13,7 +15,9 @@ const Recipes = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const { fetchRecipes } = useRecipes();  const [recipes, setRecipes] = useState([]);
-  const [categories, setCategories] = useState([]);  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
+  const [recipeRatings, setRecipeRatings] = useState({});
+  const [favoriteRecipes, setFavoriteRecipes] = useState(new Set());const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true); // Prevent flickering on initial load
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
@@ -49,6 +53,67 @@ const Recipes = () => {
     setSelectedRecipe(null);
   };
 
+  // Load ratings for all recipes
+  const loadRecipeRatings = async (recipes) => {
+    try {
+      const ratings = {};
+      await Promise.all(
+        recipes.map(async (recipe) => {
+          try {
+            const rating = await getAverageRating(recipe.id);
+            ratings[recipe.id] = rating;
+          } catch (error) {
+            console.error(`Error loading rating for recipe ${recipe.id}:`, error);
+            ratings[recipe.id] = { average: 0, count: 0 };
+          }
+        })
+      );
+      setRecipeRatings(ratings);
+    } catch (error) {
+      console.error('Error loading recipe ratings:', error);
+    }
+  };
+
+  // Load user favorites
+  const loadUserFavorites = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const favorites = await favoriteService.getFavorites(user.id);
+      setFavoriteRecipes(new Set(favorites.map(fav => fav.id)));
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+      // Don't show error to user, just log it
+    }
+  };
+
+  // Handle favorite toggle
+  const handleFavoriteToggle = async (recipeId) => {
+    if (!user?.id) {
+      alert('Please login to add favorites');
+      return;
+    }
+
+    try {
+      const isFavorite = favoriteRecipes.has(recipeId);
+      
+      if (isFavorite) {
+        await favoriteService.removeFavorite(user.id, recipeId);
+        setFavoriteRecipes(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(recipeId);
+          return newSet;
+        });
+      } else {
+        await favoriteService.addFavorite(user.id, recipeId);
+        setFavoriteRecipes(prev => new Set([...prev, recipeId]));
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Error updating favorite. Please try again.');
+    }
+  };
+
   // Helper function to get correct image URL
   const getRecipeImageUrl = (recipe) => {
     let imageUrl = recipe.image_url;
@@ -63,7 +128,6 @@ const Recipes = () => {
     // Use getSafeImageUrl to handle any problematic URLs
     return getSafeImageUrl(imageUrl);
   };
-
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -77,6 +141,10 @@ const Recipes = () => {
         const categoriesData = await fetchCategories();
         setCategories(categoriesData);
         
+        // Load ratings and favorites
+        await loadRecipeRatings(recipesData);
+        await loadUserFavorites();
+        
         setLoading(false);
         setInitialLoad(false);
       } catch (error) {
@@ -87,7 +155,7 @@ const Recipes = () => {
     };
 
     loadData();
-  }, []); // Empty dependency array - hanya load sekali saat component mount
+  }, []);// Empty dependency array - hanya load sekali saat component mount
   // Use useMemo to optimize filtering and prevent unnecessary re-computations
   const filteredRecipes = useMemo(() => {
     // Filter and sort recipes
@@ -307,106 +375,130 @@ const Recipes = () => {
             </div>
           ) : (            <div className="columns is-multiline">
               {filteredRecipes.map(recipe => (
-                <div key={recipe.id} className="column is-4-desktop is-6-tablet is-12-mobile">
-                  <div className="card" style={{ height: '100%', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                <div key={recipe.id} className="column is-one-third">
+                  <div className="card">
                     <div className="card-image" style={{ position: 'relative' }}>
-                      <figure className="image is-16by9">
-                        <LazyImage 
-                          src={getRecipeImageUrl(recipe)} 
-                          alt={recipe.title}
-                          style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                          fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
-                        />
-                      </figure>
-                      {/* Time badge - positioned at top right */}
-                      <div style={{
-                        position: 'absolute',
-                        top: '12px',
-                        right: '12px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        borderRadius: '20px',
-                        padding: '6px 12px',
-                        backdropFilter: 'blur(8px)',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-                      }}>
-                        <span style={{ 
-                          fontSize: '12px', 
-                          fontWeight: '600',
-                          color: '#363636',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}>
-                          <i className="fas fa-clock" style={{ fontSize: '10px', color: '#ff6b35' }}></i>
-                          {(recipe.cooking_time || recipe.cook_time || recipe.prep_time || 30)} min
-                        </span>
-                      </div>
+                      <Link to={`/recipes/${recipe.id}`} style={{ display: 'block' }}>
+                        <figure className="image is-16by9">
+                          <LazyImage 
+                            src={getRecipeImageUrl(recipe)} 
+                            alt={recipe.title}
+                            style={{ 
+                              objectFit: 'cover', 
+                              width: '100%', 
+                              height: '100%',
+                              cursor: 'pointer',
+                              transition: 'transform 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                            fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                          />
+                        </figure>
+                      </Link>
                     </div>
-                    <div className="card-content" style={{ padding: '20px' }}>
-                      <div style={{ marginBottom: '12px' }}>
-                        <h3 style={{ 
-                          fontSize: '18px', 
-                          fontWeight: '600', 
-                          color: '#2c3e50',
-                          marginBottom: '6px',
-                          lineHeight: '1.3'
-                        }}>
-                          {recipe.title}
-                        </h3>
-                        <p style={{ 
-                          fontSize: '13px', 
-                          color: '#7f8c8d',
-                          marginBottom: '12px'
-                        }}>
-                          {recipe.category ? recipe.category.name : 'Uncategorized'}
-                        </p>
+                    <div className="card-content">
+                      <div className="media">
+                        <div className="media-content">
+                          <Link to={`/recipes/${recipe.id}`} style={{ textDecoration: 'none' }}>
+                            <p className="title is-5" style={{ 
+                              color: 'var(--primary-color)',
+                              cursor: 'pointer',
+                              transition: 'color 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => e.target.style.color = 'var(--accent-color)'}
+                            onMouseLeave={(e) => e.target.style.color = 'var(--primary-color)'}
+                            >
+                              {recipe.title}
+                            </p>
+                          </Link>                          <div className="tags">
+                            {recipeRatings[recipe.id] ? (
+                              <span className="tag" style={{ 
+                                backgroundColor: recipeRatings[recipe.id].average > 0 ? 'var(--secondary-color)' : '#e0e0e0', 
+                                color: recipeRatings[recipe.id].average > 0 ? 'var(--text-on-secondary)' : '#666' 
+                              }}>
+                                <i className="fas fa-star mr-1"></i> 
+                                {recipeRatings[recipe.id].average > 0 
+                                  ? recipeRatings[recipe.id].average 
+                                  : 'No rating'
+                                }
+                                {recipeRatings[recipe.id].count > 0 && (
+                                  <span className="ml-1">({recipeRatings[recipe.id].count})</span>
+                                )}
+                              </span>
+                            ) : (
+                              <span className="tag" style={{ 
+                                backgroundColor: '#e0e0e0', 
+                                color: '#666' 
+                              }}>
+                                <i className="fas fa-star mr-1"></i> Loading...
+                              </span>
+                            )}
+                            <span className="tag is-light">
+                              <i className="fas fa-clock mr-1"></i> 
+                              {recipe.cooking_time || recipe.cook_time || recipe.prep_time || '30'} mins
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <p style={{ 
-                        fontSize: '14px', 
-                        color: '#555',
-                        lineHeight: '1.5',
-                        marginBottom: '16px'
-                      }}>
-                        {recipe.description ? recipe.description.substring(0, 80) + '...' : 'No description available'}
-                      </p>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center' 
-                      }}>                        <Link 
-                          to={`/recipes/${recipe.id}`}
-                          style={{
-                            backgroundColor: '#ff6b35',
-                            color: 'white',
-                            padding: '8px 16px',
-                            borderRadius: '8px',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            textDecoration: 'none',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseOver={(e) => e.target.style.backgroundColor = '#e55a2b'}
-                          onMouseOut={(e) => e.target.style.backgroundColor = '#ff6b35'}
-                        >
-                          View Recipe
-                        </Link>
-                        <button 
-                          onClick={() => handleShare(recipe)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            fontSize: '18px',
-                            color: '#95a5a6',
-                            cursor: 'pointer',
-                            padding: '8px',
-                            borderRadius: '50%',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseOver={(e) => e.target.style.color = '#ff6b35'}
-                          onMouseOut={(e) => e.target.style.color = '#95a5a6'}
-                          title="Share Recipe"
-                        >
-                          <i className="fas fa-share-alt"></i>                        </button>
+                      
+                      <div className="content">
+                        <p className="is-size-6 mb-4">
+                          {recipe.description ? recipe.description.substring(0, 100) + '...' : 'A delicious recipe that you will love to try at home.'}
+                        </p>
+                        
+                        <div className="level is-mobile">
+                          <div className="level-left">
+                            <div className="level-item">
+                              <div className="tags are-small">
+                                <span className="tag is-light">
+                                  <i className="fas fa-utensils mr-1"></i> 
+                                  {recipe.category?.name || 'Main Dish'}
+                                </span>
+                                <span className="tag is-light">
+                                  <i className="fas fa-fire mr-1"></i> 
+                                  {recipe.calories || '400'} cal
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="level-right">
+                            <div className="level-item">
+                              <div className="buttons are-small">
+                                <Link 
+                                  to={`/recipes/${recipe.id}`}
+                                  className="button is-primary" 
+                                  style={{ 
+                                    backgroundColor: 'var(--accent-color)', 
+                                    color: 'var(--text-on-primary)',
+                                    borderColor: 'var(--accent-color)'
+                                  }}
+                                  title="View Recipe"
+                                >
+                                  <i className="fas fa-eye mr-1"></i>
+                                  View
+                                </Link>                                <button 
+                                  className={`button ${favoriteRecipes.has(recipe.id) ? 'is-danger' : 'is-light'}`} 
+                                  title={favoriteRecipes.has(recipe.id) ? 'Remove from favorites' : 'Add to favorites'}
+                                  onClick={() => handleFavoriteToggle(recipe.id)}
+                                >
+                                  <i className={favoriteRecipes.has(recipe.id) ? "fas fa-heart" : "far fa-heart"}></i>
+                                </button>
+                                <button 
+                                  className="button" 
+                                  style={{ 
+                                    backgroundColor: 'var(--primary-color)', 
+                                    color: 'var(--text-on-primary)' 
+                                  }}
+                                  onClick={() => handleShare(recipe)}
+                                  title="Share recipe"
+                                >
+                                  <i className="fas fa-share-alt"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

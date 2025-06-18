@@ -330,59 +330,118 @@ const Profile = () => {
                     Browse Recipes
                   </Link>
                 </div>
-              ) : (
-                <div className="columns is-multiline">
+              ) : (                <div className="columns is-multiline">
                   {favorites.map(recipe => (
                     <div key={recipe.id} className="column is-6">
                       <div className="card">
-                        <div className="card-image">
-                          <figure className="image is-16by9">
-                            <img 
-                              src={getSafeImageUrl(recipe.image_url, 480, 320)}
-                              onError={(e) => handleImageError(e, 480, 320)}
-                              alt={recipe.title}
-                              style={{ objectFit: 'cover' }}
-                            />
-                          </figure>
-                        </div>                        <div className="card-content">
-                          <p className="title is-6">{recipe.title}</p>
-                          <p className="content is-size-7">{recipe.description?.substring(0, 80)}...</p>
-                          
-                          {/* Rating Display */}
-                          {recipe.rating && (
-                            <div className="field mb-3">
-                              <div className="tags has-addons">
-                                <span className="tag is-warning">
-                                  <i className="fas fa-star mr-1"></i>
-                                  {recipe.rating.average > 0 ? recipe.rating.average : 'No rating'}
-                                </span>
-                                {recipe.rating.count > 0 && (
-                                  <span className="tag is-light">
-                                    {recipe.rating.count} review{recipe.rating.count !== 1 ? 's' : ''}
+                        <div className="card-image" style={{ position: 'relative' }}>
+                          <Link to={`/recipes/${recipe.id}`} style={{ display: 'block' }}>
+                            <figure className="image is-16by9">
+                              <img 
+                                src={getSafeImageUrl(recipe.image_url, 480, 320)}
+                                onError={(e) => handleImageError(e, 480, 320)}
+                                alt={recipe.title}
+                                style={{ 
+                                  objectFit: 'cover', 
+                                  width: '100%', 
+                                  height: '100%',
+                                  cursor: 'pointer',
+                                  transition: 'transform 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                                onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                              />
+                            </figure>
+                          </Link>
+                        </div>
+                        <div className="card-content">
+                          <div className="media">
+                            <div className="media-content">
+                              <Link to={`/recipes/${recipe.id}`} style={{ textDecoration: 'none' }}>
+                                <p className="title is-5" style={{ 
+                                  color: 'var(--primary-color)',
+                                  cursor: 'pointer',
+                                  transition: 'color 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.color = 'var(--accent-color)'}
+                                onMouseLeave={(e) => e.target.style.color = 'var(--primary-color)'}
+                                >
+                                  {recipe.title}
+                                </p>
+                              </Link>
+                              <div className="tags">
+                                {recipe.rating && recipe.rating.count > 0 ? (
+                                  <span className="tag" style={{ 
+                                    backgroundColor: 'var(--secondary-color)', 
+                                    color: 'var(--text-on-secondary)' 
+                                  }}>
+                                    <i className="fas fa-star mr-1"></i> 
+                                    {recipe.rating.average}
+                                    <span className="ml-1">({recipe.rating.count})</span>
+                                  </span>
+                                ) : (
+                                  <span className="tag" style={{ 
+                                    backgroundColor: '#e0e0e0', 
+                                    color: '#666' 
+                                  }}>
+                                    <i className="fas fa-star mr-1"></i> No rating
                                   </span>
                                 )}
+                                <span className="tag is-light">
+                                  <i className="fas fa-clock mr-1"></i> 
+                                  {recipe.cooking_time || recipe.cook_time || recipe.prep_time || '30'} mins
+                                </span>
                               </div>
                             </div>
-                          )}
+                          </div>
                           
-                          <div className="field is-grouped">
-                            <div className="control">
-                              <Link 
-                                to={`/recipes/${recipe.id}`}
-                                className="button is-primary is-small"
-                              >
-                                View
-                              </Link>
-                            </div>
-                            <div className="control">
-                              <button 
-                                className="button is-danger is-small is-outlined"
-                                onClick={() => handleRemoveFavorite(recipe.id)}
-                                title="Remove from favorites"
-                              >
-                                <i className="fas fa-heart-broken mr-1"></i>
-                                Remove
-                              </button>
+                          <div className="content">
+                            <p className="is-size-6 mb-4">
+                              {recipe.description ? recipe.description.substring(0, 100) + '...' : 'A delicious recipe that you will love to try at home.'}
+                            </p>
+                            
+                            <div className="level is-mobile">
+                              <div className="level-left">
+                                <div className="level-item">
+                                  <div className="tags are-small">
+                                    <span className="tag is-light">
+                                      <i className="fas fa-utensils mr-1"></i> 
+                                      {recipe.category?.name || 'Main Dish'}
+                                    </span>
+                                    <span className="tag is-light">
+                                      <i className="fas fa-fire mr-1"></i> 
+                                      {recipe.calories || '400'} cal
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="level-right">
+                                <div className="level-item">
+                                  <div className="buttons are-small">
+                                    <Link 
+                                      to={`/recipes/${recipe.id}`}
+                                      className="button is-primary" 
+                                      style={{ 
+                                        backgroundColor: 'var(--accent-color)', 
+                                        color: 'var(--text-on-primary)',
+                                        borderColor: 'var(--accent-color)'
+                                      }}
+                                      title="View Recipe"
+                                    >
+                                      <i className="fas fa-eye mr-1"></i>
+                                      View
+                                    </Link>
+                                    <button 
+                                      className="button is-danger is-outlined"
+                                      onClick={() => handleRemoveFavorite(recipe.id)}
+                                      title="Remove from favorites"
+                                    >
+                                      <i className="fas fa-heart-broken mr-1"></i>
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>

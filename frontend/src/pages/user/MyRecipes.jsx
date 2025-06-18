@@ -147,15 +147,8 @@ const MyRecipes = () => {
                           src={recipe.image_url} 
                           alt={recipe.title}
                           style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                          fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
-                        />
+                          fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"                        />
                       </figure>
-                      <div className="recipe-time-badge">
-                        <span className="tag is-warning is-light">
-                          <i className="fas fa-clock mr-1"></i>
-                          {(recipe.cooking_time || recipe.cook_time || recipe.prep_time || 30)} min
-                        </span>
-                      </div>
                       <div className="recipe-status-badge" style={{ position: 'absolute', top: '12px', right: '12px' }}>
                         <span className={`tag ${recipe.status === 'published' ? 'is-success' : 'is-warning'}`}>
                           {recipe.status === 'published' ? 'Published' : 'Draft'}

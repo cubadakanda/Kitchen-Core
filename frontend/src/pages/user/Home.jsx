@@ -322,30 +322,8 @@ const Home = () => {
                                 onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
                                 onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                                 fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
-                              />
-                            </figure>
-                          </Link><div className="recipe-time-badge" style={{
-                            position: 'absolute',
-                            top: '12px',
-                            right: '12px',
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                            borderRadius: '20px',
-                            padding: '6px 12px',
-                            backdropFilter: 'blur(8px)',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-                          }}>
-                            <span style={{ 
-                              fontSize: '12px', 
-                              fontWeight: '600',
-                              color: '#363636',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}>
-                              <i className="fas fa-clock" style={{ fontSize: '10px', color: '#ff6b35' }}></i>
-                              {recipe.cooking_time || recipe.cook_time || recipe.prep_time || '30'} mins
-                            </span>
-                          </div>
+                              />                            </figure>
+                          </Link>
                         </div>
                         <div className="card-content">
                           <div className="media">                            <div className="media-content">
