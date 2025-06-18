@@ -300,3 +300,10 @@ export const categoryService = {  getAllCategories: async () => {
     }
   }
 };
+
+// Export individual functions for easier imports
+export const fetchCategories = categoryService.getAllCategories;
+export const getCategoryById = categoryService.getCategoryById;
+export const createCategory = categoryService.createCategory;
+export const updateCategory = categoryService.updateCategory;
+export const deleteCategory = categoryService.deleteCategory;

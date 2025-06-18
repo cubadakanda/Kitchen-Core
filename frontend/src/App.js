@@ -5,7 +5,7 @@ import { useAuth } from './context/AuthContext';
 import SlidingAuth from './components/auth/SlidingAuth';
 
 // Lazy load components for better performance
-const Home = React.lazy(() => import('./pages/user/NewHome')); // Using the new home component
+const Home = React.lazy(() => import('./pages/user/Home')); // Using the new home component
 const Profile = React.lazy(() => import('./pages/user/Profile'));
 const Recipes = React.lazy(() => import('./pages/user/Recipes'));
 const RecipeDetail = React.lazy(() => import('./pages/user/RecipeDetail'));

@@ -115,13 +115,15 @@ const SlidingAuth = () => {
   return (
     <div className={`auth-container ${isSignUp ? 'sign-up-mode' : ''}`}>
       <div className="forms-container">
-        <div className="signin-signup">          {/* Sign In Form */}
+        <div className="signin-signup">
+          {/* Sign In Form */}
           <form onSubmit={handleLoginSubmit} className="sign-in-form">
-            <h2 className="title">Sign In</h2>
+            <h2 className="title">Welcome Back</h2>
             
             {error && !isSignUp && <div className="error-message">{error}</div>}
-              <div className="input-field">
-              <i className="fa-solid fa-envelope"></i>
+            
+            <div className="input-field">
+              <i className="fas fa-envelope"></i>
               <input
                 type="email"
                 name="email"
@@ -133,7 +135,7 @@ const SlidingAuth = () => {
             </div>
             
             <div className="input-field">
-              <i className="fa-solid fa-lock"></i>
+              <i className="fas fa-lock"></i>
               <input
                 type="password"
                 name="password"
@@ -146,14 +148,14 @@ const SlidingAuth = () => {
             
             <button 
               type="submit" 
-              className="btn" 
+              className="btn solid" 
               disabled={loading && !isSignUp}
             >
               {loading && !isSignUp ? "Signing In..." : "Login"} 
-              <i className="fa-solid fa-arrow-right"></i>
+              <i className="fas fa-arrow-right"></i>
             </button>
             
-            <p className="social-text">Welcome back to Kitchen Core</p>
+            <p className="social-text">Discover & Share Your Culinary Creations</p>
           </form>
 
           {/* Sign Up Form */}
@@ -162,8 +164,9 @@ const SlidingAuth = () => {
             
             {error && isSignUp && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
-              <div className="input-field">
-              <i className="fa-solid fa-user"></i>
+            
+            <div className="input-field">
+              <i className="fas fa-user"></i>
               <input
                 type="text"
                 name="name"
@@ -175,11 +178,11 @@ const SlidingAuth = () => {
             </div>
             
             <div className="input-field">
-              <i className="fa-solid fa-envelope"></i>
+              <i className="fas fa-envelope"></i>
               <input
                 type="email"
                 name="email"
-                placeholder="Email"
+                placeholder="Email Address"
                 value={registerData.email}
                 onChange={handleRegisterChange}
                 required
@@ -187,7 +190,7 @@ const SlidingAuth = () => {
             </div>
             
             <div className="input-field">
-              <i className="fa-solid fa-lock"></i>
+              <i className="fas fa-lock"></i>
               <input
                 type="password"
                 name="password"
@@ -196,45 +199,50 @@ const SlidingAuth = () => {
                 onChange={handleRegisterChange}
                 minLength="6"
                 required
-              />            </div>
-              <button 
+              />
+            </div>
+            
+            <button 
               type="submit" 
               className="btn" 
               disabled={loading && isSignUp}
             >
               {loading && isSignUp ? "Creating Account..." : "Sign Up"} 
-              <i className="fa-solid fa-user-plus"></i>
+              <i className="fas fa-user-plus"></i>
             </button>
             
-            <p className="social-text">Start your culinary journey today</p>
+            <p className="social-text">Join The Kitchen Core Community</p>
           </form>
         </div>
       </div>
 
-      <div className="panels-container">        <div className="panel left-panel">
+      <div className="panels-container">
+        <div className="panel left-panel">
           <div className="content">
             <h3>New to Kitchen Core?</h3>
             <p>
-              Join our community of food lovers and start sharing your recipes today!
+              Start your culinary journey with us! Discover amazing recipes,
+              save your favorites, and share your cooking experiences.
             </p>
             <button className="btn transparent" onClick={handleSignUpMode}>
-              Sign Up
+              Create Account
             </button>
           </div>
-          <img src={require("../../styles/img/baker.png")} className="image" alt="Baker" />
+          <img src="/cooking-left.svg" className="image" alt="Cooking" />
         </div>
         
         <div className="panel right-panel">
           <div className="content">
-            <h3>Already a member?</h3>
+            <h3>One of Us?</h3>
             <p>
-              Sign in to access your recipes and continue your culinary journey.
+              Welcome back chef! Sign in to access your saved recipes, 
+              continue your culinary adventure with Kitchen Core.
             </p>
             <button className="btn transparent" onClick={handleSignInMode}>
               Sign In
             </button>
           </div>
-          <img src={require("../../styles/img/hot-pot.png")} className="image" alt="Hot Pot" />
+          <img src="/cooking-right.svg" className="image" alt="Cooking" />
         </div>
       </div>
     </div>
