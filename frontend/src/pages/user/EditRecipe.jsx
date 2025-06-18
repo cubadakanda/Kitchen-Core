@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import Header from '../../components/common/Header';
 import { recipeService } from '../../services/recipeService';
+import { simulateImageUpload, getSafeImageUrl, handleImageError, createImagePreview, revokeImagePreview } from '../../utils/imageUtils';
 import '../../styles/bulma-home.css';
 
 const EditRecipe = () => {
@@ -67,21 +68,20 @@ const EditRecipe = () => {
             category_id: recipeData.category_id || '',
             servings: recipeData.servings || '',
             image: null,
-            status: recipeData.status || 'published'
-          });
+            status: recipeData.status || 'published'          });
           
-          // Set image preview if available
+          // Set image preview using safe image URL
+          let imageUrl = null;
           if (recipeData.image_url) {
-            const imageUrl = recipeData.image_url.startsWith('http') 
-              ? recipeData.image_url 
-              : `http://localhost:5000/${recipeData.image_url}`;
-            setImagePreview(imageUrl);
+            imageUrl = recipeData.image_url;
           } else if (recipeData.image) {
-            const imageUrl = recipeData.image.startsWith('http') 
-              ? recipeData.image 
-              : `http://localhost:5000/${recipeData.image}`;
-            setImagePreview(imageUrl);
+            imageUrl = recipeData.image;
           }
+          
+          // Use getSafeImageUrl to handle problematic URLs
+          const safeImageUrl = getSafeImageUrl(imageUrl);
+          console.log('Setting image preview:', safeImageUrl);
+          setImagePreview(safeImageUrl);
         } else {
           setError('Recipe not found');
           setTimeout(() => {
@@ -127,25 +127,62 @@ const EditRecipe = () => {
       ...prev,
       [name]: value
     }));
-  };
-
-  const handleImageChange = (e) => {
+  };  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      setError('Image size should be less than 2MB');
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Please upload a valid image file (JPEG, PNG, or WebP)');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-      setFormData((prev) => ({ ...prev, image: file }));
-    };
-    reader.readAsDataURL(file);
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      setError('Image file size must be less than 5MB');
+      return;
+    }
+
+    try {
+      // Clear any previous error
+      setError(null);
+
+      // Create immediate preview using object URL
+      const previewUrl = createImagePreview(file);
+      
+      // Clean up previous preview URL if exists
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        revokeImagePreview(imagePreview);
+      }
+      
+      setImagePreview(previewUrl);
+
+      // Convert file to base64 for storage
+      const uploadResult = await simulateImageUpload(file);
+        if (uploadResult.success) {
+        console.log('=== FRONTEND IMAGE UPLOAD SUCCESS ===');
+        console.log(`File "${file.name}" uploaded successfully`);
+        console.log('Upload result:', uploadResult);
+        console.log('Base64 data length:', uploadResult.url ? uploadResult.url.length : 'null');
+        console.log('=== END FRONTEND IMAGE UPLOAD ===');
+        
+        setFormData((prev) => ({ 
+          ...prev, 
+          image: file, 
+          imageData: uploadResult.url, // base64 data
+          imageFileName: uploadResult.fileName,
+          imageFileSize: uploadResult.fileSize,
+          imageFileType: uploadResult.fileType
+        }));
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setError('Failed to process image. Please try again.');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -170,18 +207,42 @@ const EditRecipe = () => {
         prep_time: parseInt(formData.prep_time, 10),
         servings: formData.servings,
         status: formData.status
-      };
-
-      // Handle image
-      if (formData.image) {
-        recipeData.image = formData.image;
-      } else if (imagePreview) {
+      };      // Handle image: send base64 data if new image selected, otherwise preserve existing
+      if (formData.imageData) {
+        // New image uploaded - send base64 data
+        recipeData.image_data = formData.imageData;
+        recipeData.image_filename = formData.imageFileName;
+        recipeData.image_type = formData.imageFileType;
+        console.log('New image selected, sending base64 data:', {
+          filename: formData.imageFileName,
+          type: formData.imageFileType,
+          size: formData.imageFileSize
+        });
+        // Remove any existing image_url since we're uploading new image
+        delete recipeData.image_url;
+      } else if (imagePreview && !imagePreview.startsWith('blob:')) {
+        // No new image - preserve existing image_url only if it's not a blob URL
         if (imagePreview.startsWith('http://localhost:5000/')) {
           recipeData.image_url = imagePreview.replace('http://localhost:5000/', '');
-        } else {
+        } else if (imagePreview.startsWith('https://') || imagePreview.startsWith('http://')) {
           recipeData.image_url = imagePreview;
+        } else {
+          recipeData.image_url = `http://localhost:5000/${imagePreview}`;
         }
+        console.log('No new image uploaded, preserving existing image URL:', recipeData.image_url);
       }
+
+      // Debug logging
+      console.log('=== DEBUGGING IMAGE UPLOAD ===');
+      console.log('formData.imageData exists:', !!formData.imageData);
+      console.log('formData.imageFileName:', formData.imageFileName);
+      console.log('imagePreview:', imagePreview);
+      console.log('imagePreview starts with blob:', imagePreview?.startsWith('blob:'));
+      console.log('recipeData.image_data exists:', !!recipeData.image_data);
+      console.log('recipeData.image_url:', recipeData.image_url);
+      console.log('=== END DEBUGGING ===');
+
+      console.log('Final recipe data being sent:', recipeData);
 
       const response = await recipeService.updateRecipe(id, recipeData);
       
@@ -200,6 +261,16 @@ const EditRecipe = () => {
       setIsLoading(false);
     }
   };
+
+  // Cleanup effect to revoke object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clean up any blob URLs when component unmounts
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        revokeImagePreview(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   if (!user) {
     return (
@@ -442,19 +513,20 @@ const EditRecipe = () => {
                               </span>
                             </label>
                           </div>
-                          <p className="help">Max file size: 2MB. Leave empty to keep current image.</p>
+                          <p className="help">Max file size: 2MB. Leave empty to keep current image. <br/>
+                            <strong>Note:</strong> Your uploaded image will be used for the recipe. Supported formats: JPEG, PNG, WebP (max 5MB).</p>
                         </div>
 
                         <div className="image-preview mt-4">
                           {imagePreview ? (
-                            <figure className="image is-4by3">
-                              <img 
+                            <figure className="image is-4by3">                              <img 
                                 src={imagePreview} 
                                 alt="Recipe preview" 
                                 style={{ objectFit: 'cover', borderRadius: '6px' }}
                                 onError={(e) => {
                                   e.target.onerror = null; 
-                                  e.target.src = "https://bulma.io/images/placeholders/1280x720.png";
+                                  e.target.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80";
+                                  console.log('Image failed to load, using fallback');
                                 }}
                               />
                               <figcaption className="has-text-centered mt-2 has-text-grey is-size-7">

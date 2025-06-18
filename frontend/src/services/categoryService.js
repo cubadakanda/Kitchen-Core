@@ -7,10 +7,23 @@ const mockCategories = [
   { id: 5, name: 'Healthy Food', description: 'Nutritious and balanced meals', recipe_count: 9, isMockData: true }
 ];
 
+// Global cache for categories
+let categoriesCache = null;
+let categoriesCacheTimestamp = null;
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+
 const API_BASE_URL = 'http://localhost:5000/api';
 
-export const categoryService = {  getAllCategories: async () => {
+export const categoryService = {  
+  getAllCategories: async (forceRefresh = false) => {
     try {
+      // Check if we have valid cached data
+      const now = Date.now();
+      if (!forceRefresh && categoriesCache && categoriesCacheTimestamp && (now - categoriesCacheTimestamp < CACHE_DURATION)) {
+        console.log('Using cached categories data');
+        return categoriesCache;
+      }
+      
       console.log('Fetching categories from:', `${API_BASE_URL}/categories`);
       
       // Add timeout to fetch request to avoid long waits if server is down
@@ -46,81 +59,92 @@ export const categoryService = {  getAllCategories: async () => {
         
         throw new Error(`API error: ${response.status} - ${response.statusText}`);
       }
-      
-      const data = await response.json();
+        const data = await response.json();
       console.log('Categories API response:', data);
+      
+      let processedData;
       
       // Handle potential formats from API
       if (Array.isArray(data)) {
         // If we got an empty array, we might want to show some sample data anyway
         if (data.length === 0) {
           console.log('API returned empty categories array, using sample data for better UX');
-          return mockCategories.map(cat => ({...cat, isEmptyApiResponse: true}));
+          processedData = mockCategories.map(cat => ({...cat, isEmptyApiResponse: true}));
+        } else {
+          // Add the recipe_count property if it doesn't exist
+          processedData = data.map(category => ({
+            ...category,
+            recipe_count: category.recipe_count || 0,
+            isMockData: false
+          }));
         }
-        
-        // Add the recipe_count property if it doesn't exist
-        const enhancedData = data.map(category => ({
-          ...category,
-          recipe_count: category.recipe_count || 0,
-          isMockData: false
-        }));
-        return enhancedData;
       } else if (data && data.data && Array.isArray(data.data)) {
         if (data.data.length === 0) {
           console.log('API returned empty nested categories array, using sample data for better UX');
-          return mockCategories.map(cat => ({...cat, isEmptyApiResponse: true}));
+          processedData = mockCategories.map(cat => ({...cat, isEmptyApiResponse: true}));
+        } else {
+          processedData = data.data.map(category => ({
+            ...category,
+            recipe_count: category.recipe_count || 0,
+            isMockData: false
+          }));
         }
-        
-        const enhancedData = data.data.map(category => ({
-          ...category,
-          recipe_count: category.recipe_count || 0,
-          isMockData: false
-        }));
-        return enhancedData;
       } else {
         console.log('Using mock categories data due to unexpected API response format');
-        return mockCategories.map(cat => ({...cat, unexpectedFormat: true}));
+        processedData = mockCategories.map(cat => ({...cat, unexpectedFormat: true}));
       }
+      
+      // Cache the processed data
+      categoriesCache = processedData;
+      categoriesCacheTimestamp = Date.now();
+      
+      return processedData;
     } catch (error) {
       console.error('Error in getAllCategories:', error);
+        // Different error message based on error type
+      let fallbackData;
       
-      // Different error message based on error type
       if (error.name === 'AbortError') {
         console.log('Request timed out, server might be down');
-        return mockCategories.map(cat => ({
+        fallbackData = mockCategories.map(cat => ({
           ...cat, 
           connectionTimeout: true, 
           errorMessage: 'Connection to the API timed out. The server might be down or overloaded.'
         }));
       } else if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
         console.log('Network error, API might be down');
-        return mockCategories.map(cat => ({
+        fallbackData = mockCategories.map(cat => ({
           ...cat, 
           networkError: true,
           errorMessage: 'Network error occurred. The API server might be down or unreachable.'
         }));
       } else if (error.message?.includes('Database connection error')) {
         console.log('Database connection error reported by API');
-        return mockCategories.map(cat => ({
+        fallbackData = mockCategories.map(cat => ({
           ...cat, 
           dbConnectionError: true,
           errorMessage: 'The API server reported a database connection error. MySQL might not be running.'
         }));
       } else if (error.message?.includes('500')) {
-        console.log('Server error (500)');
-        return mockCategories.map(cat => ({
-          ...cat, 
+        console.log('Server error (500)');        fallbackData = mockCategories.map(cat => ({
+          ...cat,
           serverError: true,
           errorMessage: 'The server encountered an internal error (500). Check the backend logs for details.'
         }));
       } else {
         console.log('Using mock categories data as fallback');
-        return mockCategories.map(cat => ({
+        fallbackData = mockCategories.map(cat => ({
           ...cat, 
           apiError: error.message,
           errorMessage: `API error: ${error.message || 'Unknown error'}`
         }));
       }
+      
+      // Cache the fallback data too
+      categoriesCache = fallbackData;
+      categoriesCacheTimestamp = Date.now();
+      
+      return fallbackData;
     }
   },
   getCategoryById: async (id) => {
@@ -298,6 +322,17 @@ export const categoryService = {  getAllCategories: async () => {
         isMockError: true
       };
     }
+  },
+  
+  // Cache management functions
+  invalidateCache: () => {
+    categoriesCache = null;
+    categoriesCacheTimestamp = null;
+    console.log('Categories cache invalidated');
+  },
+  
+  refreshCategories: () => {
+    return categoryService.getAllCategories(true); // Force refresh
   }
 };
 

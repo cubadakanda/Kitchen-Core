@@ -72,12 +72,11 @@ function AppRoutes() {
             {/* User Routes - Some Protected, Some Public */}
           <Route path="/home" element={<Home />} />
           <Route path="/recipes" element={<Recipes />} />
-          <Route path="/recipes/:id" element={<RecipeDetail />} />
-          <Route path="/profile" element={
+          <Route path="/recipes/:id" element={<RecipeDetail />} />          <Route path="/profile" element={
             <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
-          } />          <Route path="/recipes/:id" element={<RecipeDetail />} />
+          } />
           
           {/* User Recipe Management Routes - Protected */}
           <Route path="/my-recipes" element={

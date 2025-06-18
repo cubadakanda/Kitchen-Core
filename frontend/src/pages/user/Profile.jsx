@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import Header from '../../components/common/Header';
 import useRecipes from '../../hooks/useRecipes';
+import { getSafeImageUrl, handleImageError } from '../../utils/imageUtils';
 import '../../styles/bulma-home.css';
 
 const Profile = () => {
@@ -288,7 +289,8 @@ const Profile = () => {
                         <div className="card-image">
                           <figure className="image is-16by9">
                             <img 
-                              src={recipe.image_url || 'https://bulma.io/images/placeholders/480x320.png'}
+                              src={getSafeImageUrl(recipe.image_url, 480, 320)}
+                              onError={(e) => handleImageError(e, 480, 320)}
                               alt={recipe.title}
                               style={{ objectFit: 'cover' }}
                             />

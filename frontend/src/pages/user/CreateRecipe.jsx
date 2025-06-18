@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import Header from '../../components/common/Header';
 import { recipeService } from '../../services/recipeService';
+import { simulateImageUpload, getSafeImageUrl, handleImageError, createImagePreview, revokeImagePreview } from '../../utils/imageUtils';
 import '../../styles/bulma-home.css';
 
 const CreateRecipe = () => {
@@ -64,25 +65,58 @@ const CreateRecipe = () => {
       ...prev,
       [name]: value
     }));
-  };
-
-  const handleImageChange = (e) => {
+  };  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      setError('Image size should be less than 2MB');
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Please upload a valid image file (JPEG, PNG, or WebP)');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-      setFormData((prev) => ({ ...prev, image: file }));
-    };
-    reader.readAsDataURL(file);
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      setError('Image file size must be less than 5MB');
+      return;
+    }
+
+    try {
+      // Clear any previous error
+      setError(null);
+
+      // Create immediate preview using object URL
+      const previewUrl = createImagePreview(file);
+      
+      // Clean up previous preview URL if exists
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        revokeImagePreview(imagePreview);
+      }
+      
+      setImagePreview(previewUrl);
+
+      // Convert file to base64 for storage
+      const uploadResult = await simulateImageUpload(file);
+      
+      if (uploadResult.success) {
+        console.log(`File "${file.name}" uploaded successfully`);
+        setFormData((prev) => ({ 
+          ...prev, 
+          image: file, 
+          imageData: uploadResult.url, // base64 data
+          imageFileName: uploadResult.fileName,
+          imageFileSize: uploadResult.fileSize,
+          imageFileType: uploadResult.fileType
+        }));
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setError('Failed to process image. Please try again.');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -96,13 +130,23 @@ const CreateRecipe = () => {
       return;
     }
 
-    try {
-      const recipeData = {
+    try {      const recipeData = {
         ...formData,
         user_id: user.id,
         cook_time: parseInt(formData.cooking_time, 10),
         prep_time: parseInt(formData.prep_time, 10)
-      };
+      };      // Handle image upload - send base64 data if image selected
+      if (formData.imageData) {
+        // New image uploaded - send base64 data
+        recipeData.image_data = formData.imageData;
+        recipeData.image_filename = formData.imageFileName;
+        recipeData.image_type = formData.imageFileType;
+        console.log('Image selected, sending base64 data:', {
+          filename: formData.imageFileName,
+          type: formData.imageFileType,
+          size: formData.imageFileSize
+        });
+      }
 
       const response = await recipeService.createRecipe(recipeData);
       
@@ -121,6 +165,16 @@ const CreateRecipe = () => {
       setIsLoading(false);
     }
   };
+
+  // Cleanup effect to revoke object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clean up any blob URLs when component unmounts
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        revokeImagePreview(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   if (!user) {
     return (
@@ -331,7 +385,8 @@ const CreateRecipe = () => {
                               </span>
                             </label>
                           </div>
-                          <p className="help">Max file size: 2MB</p>
+                          <p className="help">Max file size: 2MB. <br/>
+                            <strong>Note:</strong> Your uploaded image will be used for the recipe. Supported formats: JPEG, PNG, WebP (max 5MB).</p>
                         </div>
 
                         <div className="image-preview mt-4">

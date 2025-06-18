@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import Header from '../../components/common/Header';
+import { getSafeImageUrl } from '../../utils/imageUtils';
 import '../../styles/new-home.css';
 import '../../styles/tailwind-utils.css'; // Import Tailwind utility classes
 import useRecipes from '../../hooks/useRecipes';
@@ -14,6 +15,32 @@ const NewHome = () => {
   const { fetchRecipes } = useRecipes();
   const [activeTab, setActiveTab] = useState('ingredients');
   
+  // Helper function to get the correct image URL
+  const getRecipeImageUrl = (recipe) => {
+    if (!recipe || !recipe.image_url) {
+      // Fallback to random Unsplash image based on recipe ID
+      return `https://images.unsplash.com/photo-${recipe?.id === 1 ? '1512621776951-a57141f2eefd' : recipe?.id === 2 ? '1559847844-5315695dadae' : '1565299624943-b82815f6459c'}`;
+    }
+    
+    // If it's already a full URL (like Unsplash), use it as is
+    if (recipe.image_url.startsWith('http://') || recipe.image_url.startsWith('https://')) {
+      return recipe.image_url;
+    }
+    
+    // If it's our uploaded image path, convert to full URL
+    if (recipe.image_url.startsWith('/uploads/')) {
+      return `http://localhost:5000${recipe.image_url}`;
+    }
+    
+    // If it starts with uploads/ (without leading slash)
+    if (recipe.image_url.startsWith('uploads/')) {
+      return `http://localhost:5000/${recipe.image_url}`;
+    }
+    
+    // Fallback
+    return getSafeImageUrl(recipe.image_url);
+  };
+
   // Featured recipe for the details section
   const [featuredRecipe] = useState({
     id: 1,
@@ -142,7 +169,7 @@ const NewHome = () => {
               <div key={recipe.id} className="recipe-card">
                 <div className="recipe-image-container">
                   <img 
-                    src={recipe.image_url || `https://images.unsplash.com/photo-${recipe.id === 1 ? '1512621776951-a57141f2eefd' : recipe.id === 2 ? '1559847844-5315695dadae' : '1565299624943-b82815f6459c'}`}
+                    src={getRecipeImageUrl(recipe)}
                     alt={recipe.title} 
                     className="recipe-image w-full h-48 object-cover"
                   />

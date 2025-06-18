@@ -5,13 +5,14 @@ import Header from '../../components/common/Header';
 import SharePopup from '../../components/common/SharePopup';
 import useRecipes from '../../hooks/useRecipes';
 import fetchRecipeById from '../../services/recipeDetailService';
+import { getSafeImageUrl, getFullImageUrl } from '../../utils/imageUtils';
 import '../../styles/bulma-home.css';
 
 const RecipeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
-  const { fetchRecipes } = useRecipes();
+  const { recipes, fetchRecipes } = useRecipes();
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState(0);
@@ -40,27 +41,76 @@ const RecipeDetail = () => {
   const closeSharePopup = () => {
     setShowSharePopup(false);
   };
+  // Helper function to get the correct image URL
+  const getRecipeImageUrl = (recipe) => {
+    console.log('=== RECIPE IMAGE URL DEBUG ===');
+    console.log('Recipe:', recipe);
+    console.log('Recipe image_url:', recipe?.image_url);
+    
+    if (!recipe || !recipe.image_url) {
+      console.log('No recipe or image_url, using default');
+      return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80';
+    }
+    
+    // If it's already a full URL (like Unsplash), use it as is
+    if (recipe.image_url.startsWith('http://') || recipe.image_url.startsWith('https://')) {
+      console.log('Using existing full URL:', recipe.image_url);
+      return recipe.image_url;
+    }
+    
+    // If it's our uploaded image path, convert to full URL
+    if (recipe.image_url.startsWith('/uploads/')) {
+      const fullUrl = `http://localhost:5000${recipe.image_url}`;
+      console.log('Converting /uploads/ path to full URL:', fullUrl);
+      return fullUrl;
+    }
+    
+    // If it starts with uploads/ (without leading slash)
+    if (recipe.image_url.startsWith('uploads/')) {
+      const fullUrl = `http://localhost:5000/${recipe.image_url}`;
+      console.log('Converting uploads/ path to full URL:', fullUrl);
+      return fullUrl;
+    }
+    
+    // Fallback to default
+    console.log('Using fallback with getSafeImageUrl');
+    const safeUrl = getSafeImageUrl(recipe.image_url);
+    console.log('Final URL:', safeUrl);
+    console.log('=== END RECIPE IMAGE URL DEBUG ===');
+    return safeUrl;
+  };
+
   useEffect(() => {
     const loadRecipe = async () => {
       try {
         setLoading(true);
         
+        // First check if recipe is already in cached recipes
+        const recipeId = parseInt(id);
+        let foundRecipe = recipes.find(r => r.id === recipeId);
+        
+        if (foundRecipe) {
+          console.log('Using cached recipe data');
+          setRecipe(foundRecipe);
+          setLoading(false);
+          return;
+        }
+        
         // Try to fetch from API first
         try {
           const recipeData = await fetchRecipeById(id);
-          if (recipeData) {
-            // Process the recipe data
+          if (recipeData) {            // Process the recipe data
             const enhancedRecipe = {
               ...recipeData,
               ingredients: recipeData.ingredients ? 
                 (typeof recipeData.ingredients === 'string' ? 
                   recipeData.ingredients.split('\n').filter(item => item.trim()) : 
-                  recipeData.ingredients) : 
+                  Array.isArray(recipeData.ingredients) ? recipeData.ingredients : ['No ingredients available']) : 
                 ['No ingredients available'],
               instructions: recipeData.instructions ? 
                 (typeof recipeData.instructions === 'string' ? 
                   recipeData.instructions.split('\n').filter(item => item.trim()) : 
-                  recipeData.instructions) : 
+                  Array.isArray(recipeData.instructions) ? recipeData.instructions : ['No instructions available']) : 
                 ['No instructions available'],
               nutritionFacts: recipeData.nutritionFacts || {
                 calories: recipeData.calories || 0,
@@ -83,18 +133,27 @@ const RecipeDetail = () => {
           console.log('API failed, trying fallback data:', apiError);
         }
         
-        // Fallback to mock data if API fails
-        const { fetchRecipes } = useRecipes();
-        const recipesData = await fetchRecipes();
-        const foundRecipe = recipesData.find(r => r.id === parseInt(id));
-          if (foundRecipe) {
-          // Enhance recipe data with detailed information
+        // If not in cache, try to fetch recipes (this will use cache if available)
+        if (recipes.length === 0) {
+          const recipesData = await fetchRecipes();
+          foundRecipe = recipesData.find(r => r.id === recipeId);
+        }
+        
+        if (foundRecipe) {          // Enhance recipe data with detailed information
           const enhancedRecipe = {
             ...foundRecipe,
             ingredients: foundRecipe.ingredients ? 
               (typeof foundRecipe.ingredients === 'string' ? 
                 foundRecipe.ingredients.split('\n') : 
-                foundRecipe.ingredients) : 
+                Array.isArray(foundRecipe.ingredients) ? foundRecipe.ingredients : [
+                  '2 cups rice',
+                  '3 eggs', 
+                  '1 onion, diced',
+                  '2 cloves garlic, minced',
+                  '2 tablespoons soy sauce',
+                  '1 tablespoon oil',
+                  'Salt and pepper to taste'
+                ]) : 
               [
                 '2 cups rice',
                 '3 eggs', 
@@ -107,7 +166,15 @@ const RecipeDetail = () => {
             instructions: foundRecipe.instructions ? 
               (typeof foundRecipe.instructions === 'string' ? 
                 foundRecipe.instructions.split('\n') : 
-                foundRecipe.instructions) : 
+                Array.isArray(foundRecipe.instructions) ? foundRecipe.instructions : [
+                  'Heat oil in a large pan or wok over medium-high heat.',
+                  'Add diced onion and cook until translucent, about 3-4 minutes.',
+                  'Add minced garlic and cook for another minute.',
+                  'Push vegetables to one side of the pan and scramble eggs on the other side.',
+                  'Add cooked rice to the pan and stir everything together.',
+                  'Add soy sauce, salt, and pepper. Stir-fry for 3-4 minutes.',
+                  'Serve hot and enjoy your delicious fried rice!'
+                ]) : 
               [
                 'Heat oil in a large pan or wok over medium-high heat.',
                 'Add diced onion and cook until translucent, about 3-4 minutes.',
@@ -141,7 +208,7 @@ const RecipeDetail = () => {
         navigate('/recipes');
       }
     };    loadRecipe();
-  }, [id, navigate]); // Hapus fetchRecipes dari dependency
+  }, [id, navigate, fetchRecipes, recipes]); // Add recipes to dependency
 
   const handleAddToFavorites = async () => {
     if (!user) {
@@ -242,7 +309,7 @@ const RecipeDetail = () => {
         onShareComplete={handleShareComplete}
       />      {/* Recipe Hero Section */}
       <section className="section py-6" style={{
-        background: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'}')`,
+        background: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${getRecipeImageUrl(recipe)}')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         color: 'white',
@@ -340,9 +407,8 @@ const RecipeDetail = () => {
                 <h2 className="title is-4">
                   <i className="fas fa-list-ul mr-2 has-text-primary"></i>
                   Ingredients
-                </h2>
-                <div className="content">
-                  {recipe.ingredients && recipe.ingredients.length > 0 ? (
+                </h2>                <div className="content">
+                  {recipe.ingredients && Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0 ? (
                     <ul className="ingredient-list">
                       {recipe.ingredients.map((ingredient, index) => (
                         <li key={index} className="mb-2">
@@ -390,9 +456,8 @@ const RecipeDetail = () => {
                 <h2 className="title is-4">
                   <i className="fas fa-clipboard-list mr-2 has-text-primary"></i>
                   Instructions
-                </h2>
-                <div className="content">
-                  {recipe.instructions && recipe.instructions.length > 0 ? (
+                </h2>                <div className="content">
+                  {recipe.instructions && Array.isArray(recipe.instructions) && recipe.instructions.length > 0 ? (
                     <div className="instruction-steps">
                       {recipe.instructions.map((step, index) => (
                         <div key={index} className="instruction-step mb-4 p-4" style={{

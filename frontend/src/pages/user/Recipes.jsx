@@ -6,6 +6,7 @@ import SharePopup from '../../components/common/SharePopup';
 import LazyImage from '../../components/common/LazyImage';
 import useRecipes from '../../hooks/useRecipes';
 import { fetchCategories } from '../../services/categoryService';
+import { getSafeImageUrl, getFullImageUrl } from '../../utils/imageUtils';
 import '../../styles/bulma-home.css';
 
 const Recipes = () => {
@@ -46,7 +47,24 @@ const Recipes = () => {
   const closeSharePopup = () => {
     setShowSharePopup(false);
     setSelectedRecipe(null);
-  };  useEffect(() => {
+  };
+
+  // Helper function to get correct image URL
+  const getRecipeImageUrl = (recipe) => {
+    let imageUrl = recipe.image_url;
+    
+    // If it's an uploaded image path, convert to full URL
+    if (imageUrl && imageUrl.startsWith('/uploads/')) {
+      imageUrl = `http://localhost:5000${imageUrl}`;
+    } else if (imageUrl && imageUrl.startsWith('uploads/')) {
+      imageUrl = `http://localhost:5000/${imageUrl}`;
+    }
+    
+    // Use getSafeImageUrl to handle any problematic URLs
+    return getSafeImageUrl(imageUrl);
+  };
+
+  useEffect(() => {
     const loadData = async () => {
       try {
         if (initialLoad) setLoading(true);
@@ -287,82 +305,109 @@ const Recipes = () => {
               <h3 className="title is-4 has-text-grey">No recipes found</h3>
               <p className="has-text-grey">Try adjusting your search or filters</p>
             </div>
-          ) : (
-            <div className="columns is-multiline">
+          ) : (            <div className="columns is-multiline">
               {filteredRecipes.map(recipe => (
                 <div key={recipe.id} className="column is-4-desktop is-6-tablet is-12-mobile">
-                  <div className="card">                    <div className="card-image">
+                  <div className="card" style={{ height: '100%', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                    <div className="card-image" style={{ position: 'relative' }}>
                       <figure className="image is-16by9">
                         <LazyImage 
-                          src={recipe.image_url} 
+                          src={getRecipeImageUrl(recipe)} 
                           alt={recipe.title}
                           style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                           fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
                         />
-                      </figure>                      <div className="recipe-time-badge">
-                        <span className="tag is-warning is-light">
-                          <i className="fas fa-clock mr-1"></i>
+                      </figure>
+                      {/* Time badge - positioned at top right */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '12px',
+                        right: '12px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        borderRadius: '20px',
+                        padding: '6px 12px',
+                        backdropFilter: 'blur(8px)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                      }}>
+                        <span style={{ 
+                          fontSize: '12px', 
+                          fontWeight: '600',
+                          color: '#363636',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <i className="fas fa-clock" style={{ fontSize: '10px', color: '#ff6b35' }}></i>
                           {(recipe.cooking_time || recipe.cook_time || recipe.prep_time || 30)} min
                         </span>
                       </div>
                     </div>
-                    <div className="card-content">
-                      <div className="media">
-                        <div className="media-content">
-                          <p className="title is-5">{recipe.title}</p>
-                          <p className="subtitle is-6 has-text-grey">
-                            {recipe.category ? recipe.category.name : 'Uncategorized'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="content">
-                        <p className="is-size-7 has-text-grey-dark">
-                          {recipe.description ? recipe.description.substring(0, 100) + '...' : 'No description available'}
+                    <div className="card-content" style={{ padding: '20px' }}>
+                      <div style={{ marginBottom: '12px' }}>
+                        <h3 style={{ 
+                          fontSize: '18px', 
+                          fontWeight: '600', 
+                          color: '#2c3e50',
+                          marginBottom: '6px',
+                          lineHeight: '1.3'
+                        }}>
+                          {recipe.title}
+                        </h3>
+                        <p style={{ 
+                          fontSize: '13px', 
+                          color: '#7f8c8d',
+                          marginBottom: '12px'
+                        }}>
+                          {recipe.category ? recipe.category.name : 'Uncategorized'}
                         </p>
-                        <div className="level is-mobile mt-3">
-                          <div className="level-left">
-                            <div className="level-item">
-                              <span className="tag is-light">
-                                <i className="fas fa-fire mr-1"></i>
-                                {recipe.calories || 0} cal
-                              </span>
-                            </div>
-                          </div>
-                          <div className="level-right">
-                            <div className="level-item">
-                              <div className="field is-grouped">
-                                <div className="control">
-                                  <button 
-                                    className="button is-small is-white"
-                                    onClick={() => handleFavorite(recipe.id)}
-                                    title="Add to favorites"
-                                  >
-                                    <i className="far fa-heart"></i>
-                                  </button>
-                                </div>
-                                <div className="control">
-                                  <button 
-                                    className="button is-small is-white"
-                                    onClick={() => handleShare(recipe)}
-                                    title="Share recipe"
-                                  >
-                                    <i className="fas fa-share-alt"></i>
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
                       </div>
-                      <footer className="card-footer">
-                        <Link 
-                          to={`/recipes/${recipe.id}`} 
-                          className="card-footer-item button is-primary is-fullwidth"
+                      <p style={{ 
+                        fontSize: '14px', 
+                        color: '#555',
+                        lineHeight: '1.5',
+                        marginBottom: '16px'
+                      }}>
+                        {recipe.description ? recipe.description.substring(0, 80) + '...' : 'No description available'}
+                      </p>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center' 
+                      }}>                        <Link 
+                          to={`/recipes/${recipe.id}`}
+                          style={{
+                            backgroundColor: '#ff6b35',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            textDecoration: 'none',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseOver={(e) => e.target.style.backgroundColor = '#e55a2b'}
+                          onMouseOut={(e) => e.target.style.backgroundColor = '#ff6b35'}
                         >
-                          <i className="fas fa-eye mr-2"></i>
                           View Recipe
                         </Link>
-                      </footer>
+                        <button 
+                          onClick={() => handleShare(recipe)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            fontSize: '18px',
+                            color: '#95a5a6',
+                            cursor: 'pointer',
+                            padding: '8px',
+                            borderRadius: '50%',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseOver={(e) => e.target.style.color = '#ff6b35'}
+                          onMouseOut={(e) => e.target.style.color = '#95a5a6'}
+                          title="Share Recipe"
+                        >
+                          <i className="fas fa-share-alt"></i>                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

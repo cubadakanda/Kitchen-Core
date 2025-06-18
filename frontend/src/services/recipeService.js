@@ -203,14 +203,21 @@ export const recipeService = {
         cook_time: recipeData.cook_time || 0,
         servings: recipeData.servings || '',
         status: 'published',
-        image_url: recipeData.image_url || null
-      };
+        image_url: recipeData.image_url || null      };
       
-      // Handle image upload if needed
-      if (recipeData.image && typeof recipeData.image !== 'string') {
-        // In a real app, you would upload the image to a server here
-        // and get the image URL back to store in formattedData.image_url
-        formattedData.image_url = URL.createObjectURL(recipeData.image); // Temporary preview URL
+      // Handle image upload - send base64 data if available
+      if (recipeData.image_data && recipeData.image_filename && recipeData.image_type) {
+        // New image uploaded - send base64 data
+        formattedData.image_data = recipeData.image_data;
+        formattedData.image_filename = recipeData.image_filename;
+        formattedData.image_type = recipeData.image_type;
+        console.log('Sending new image data to backend:', {
+          filename: recipeData.image_filename,
+          type: recipeData.image_type,
+          dataLength: recipeData.image_data.length
+        });
+      } else if (recipeData.image_url) {
+        formattedData.image_url = recipeData.image_url;
       }
       
       console.log('Formatted data for API:', formattedData);
@@ -288,16 +295,21 @@ export const recipeService = {
         cook_time: recipeData.cook_time || 0,
         servings: recipeData.servings || '',
         status: recipeData.status || 'published'
-      };
-        // Handle image upload if needed
-      if (recipeData.image && typeof recipeData.image !== 'string') {
-        // In a real app, you would upload the image to a server here
-        // For now, we'll just use a placeholder since we don't have image upload functionality
-        console.log('New image file detected, but image upload not implemented');
-        // Don't set image_url for new files, let backend handle it
+      };      // Handle image upload - send base64 data if available
+      if (recipeData.image_data && recipeData.image_filename && recipeData.image_type) {
+        // New image uploaded - send base64 data
+        formattedData.image_data = recipeData.image_data;
+        formattedData.image_filename = recipeData.image_filename;
+        formattedData.image_type = recipeData.image_type;
+        console.log('Sending new image data to backend:', {
+          filename: recipeData.image_filename,
+          type: recipeData.image_type,
+          dataLength: recipeData.image_data.length
+        });
       } else if (recipeData.image_url) {
         // Preserve existing image_url if no new image is selected
         formattedData.image_url = recipeData.image_url;
+        console.log('Preserving existing image_url:', recipeData.image_url);
       }
       
       const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {

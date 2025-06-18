@@ -1,20 +1,37 @@
 import { useState, useEffect, useCallback } from 'react';
 
+// Global cache to prevent duplicate API calls
+let recipesCache = null;
+let cacheTimestamp = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 const useRecipes = () => {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  const fetchRecipes = useCallback(async () => {
+  const fetchRecipes = useCallback(async (forceRefresh = false) => {
     try {
+      // Check if we have valid cached data
+      const now = Date.now();
+      if (!forceRefresh && recipesCache && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
+        console.log('Using cached recipes data');
+        setRecipes(recipesCache);
+        setLoading(false);
+        return recipesCache;
+      }
+      
       setLoading(true);
       console.log('Fetching recipes from API...');
       const response = await fetch('http://localhost:5000/api/recipes');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
-      }      const data = await response.json();
+      }
+      
+      const data = await response.json();
       console.log('Recipes fetched successfully:', data);
-        // Ensure category data is properly structured
+      
+      // Ensure category data is properly structured
       const processedData = data.map(recipe => ({
         ...recipe,
         category: recipe.category || { name: 'Uncategorized' },
@@ -24,12 +41,19 @@ const useRecipes = () => {
         calories: recipe.calories || 300
       }));
       
+      // Cache the results
+      recipesCache = processedData;
+      cacheTimestamp = now;
+      
       setRecipes(processedData);
-      return processedData; // Return the processed data
+      return processedData;
     } catch (err) {
       console.error('Error fetching recipes:', err);
-      setError(err.message);      // Return mock data as fallback
-      const mockRecipes = [        {
+      setError(err.message);
+      
+      // Return mock data as fallback
+      const mockRecipes = [
+        {
           id: 1,
           title: "Nasi Goreng Spesial",
           description: "Nasi goreng dengan bumbu rahasia yang lezat dan menggugah selera",
@@ -101,17 +125,51 @@ const useRecipes = () => {
           ingredients: "600g ayam fillet\n200ml yogurt\n400ml saus tomat\n200ml krim masak\n2 sdt garam masala\n1 sdt kunyit",
           instructions: "Marinasi ayam dengan yogurt dan rempah\nPanggang ayam hingga matang\nTumis bawang dan rempah\nTambahkan saus tomat\nMasukkan krim dan ayam\nSimmer hingga saus mengental"        }
       ];
+      
+      // Cache the fallback data too
+      recipesCache = mockRecipes;
+      cacheTimestamp = Date.now();
+      
       setRecipes(mockRecipes);
       return mockRecipes;
     } finally {
       setLoading(false);
     }
   }, []); // useCallback dependency array
+  
+  // Function to invalidate cache (useful after creating/updating recipes)
+  const invalidateCache = useCallback(() => {
+    recipesCache = null;
+    cacheTimestamp = null;
+    console.log('Recipe cache invalidated');
+  }, []);
+  
+  // Function to refresh recipes from API
+  const refreshRecipes = useCallback(() => {
+    return fetchRecipes(true); // Force refresh
+  }, [fetchRecipes]);
+  
   useEffect(() => {
-    fetchRecipes();
-  }, [fetchRecipes]); // Sekarang fetchRecipes stabil dengan useCallback
+    // Only fetch if we don't have cached data or it's expired
+    const now = Date.now();
+    if (!recipesCache || !cacheTimestamp || (now - cacheTimestamp >= CACHE_DURATION)) {
+      fetchRecipes();
+    } else {
+      console.log('Using cached recipes on mount');
+      setRecipes(recipesCache);
+      setLoading(false);
+    }
+  }, [fetchRecipes]);
 
-  return { recipes, loading, error, fetchRecipes, refetch: fetchRecipes };
+  return { 
+    recipes, 
+    loading, 
+    error, 
+    fetchRecipes, 
+    refreshRecipes,
+    invalidateCache,
+    refetch: fetchRecipes 
+  };
 };
 
 export default useRecipes;

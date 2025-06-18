@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import { recipeService } from '../../services/recipeService';
+import { getSafeImageUrl, handleImageError } from '../../utils/imageUtils';
 
 const ManageRecipes = () => {
   const navigate = useNavigate();
@@ -225,23 +226,10 @@ const ManageRecipes = () => {
               <div className="columns is-multiline">
                 {filteredRecipes.map(recipe => (
                   <div key={recipe.id} className="column is-4">
-                    <div className="card admin-card h-100">                      <div className="card-image">                        <figure className="image is-16by9">
-                          <img 
-                            src={recipe.image_url ? 
-                              (recipe.image_url.startsWith('http') ? 
-                                recipe.image_url : 
-                                recipe.image_url.startsWith('/') ? 
-                                  recipe.image_url : 
-                                  `/${recipe.image_url}`
-                              ) : 
-                              "https://bulma.io/images/placeholders/1280x720.png"
-                            } 
+                    <div className="card admin-card h-100">                      <div className="card-image">                        <figure className="image is-16by9">                          <img 
+                            src={getSafeImageUrl(recipe.image_url, 1280, 720)}
                             alt={recipe.title}
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              // Fall back to placeholder image for any error
-                              e.target.src = "https://bulma.io/images/placeholders/1280x720.png";
-                            }}
+                            onError={(e) => handleImageError(e, 1280, 720)}
                           />
                         </figure>
                         <div className="card-image-badge">

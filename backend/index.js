@@ -6,6 +6,8 @@ import CategoryRoute from "./routes/categoryRoutes.js";
 import RecipeRoute from "./routes/recipeRoutes.js";
 import UserFavoriteRoute from "./routes/userFavoriteRoutes.js";
 import RecipeRatingRoute from "./routes/recipeRatingRoutes.js";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Import all models to ensure they are loaded before sync
 import "./models/usersModel.js";
@@ -15,6 +17,8 @@ import "./models/user_favoritesModel.js";
 import "./models/recipe_ratingsModel.js";
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configure CORS properly
 app.use(cors({
@@ -24,7 +28,30 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// Debug middleware to log all incoming requests
+app.use('/api', (req, res, next) => {
+    console.log(`\n=== ${new Date().toISOString()} ===`);
+    console.log(`${req.method} ${req.originalUrl}`);
+    console.log('Headers:', req.headers['content-type']);
+    console.log('Body keys:', Object.keys(req.body || {}));
+    
+    if (req.body && req.body.image_data) {
+        console.log('Image data detected - length:', req.body.image_data.length);
+        console.log('Image filename:', req.body.image_filename);
+        console.log('Image type:', req.body.image_type);
+    }
+    
+    next();
+});
+
+// Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve static files (uploaded images)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Add API prefix to all routes
 // API Test route

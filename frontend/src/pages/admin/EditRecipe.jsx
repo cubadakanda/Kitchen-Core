@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import { recipeService } from '../../services/recipeService';
+import { getSafeImageUrl, handleImageError } from '../../utils/imageUtils';
 
 const EditRecipe = () => {
   const navigate = useNavigate();
@@ -470,10 +471,9 @@ const EditRecipe = () => {
                               <img 
                                 src={imagePreview} 
                                 alt="Recipe preview" 
-                                style={{ objectFit: 'cover', borderRadius: '6px' }}
-                                onError={(e) => {
+                                style={{ objectFit: 'cover', borderRadius: '6px' }}                                onError={(e) => {
                                   e.target.onerror = null; 
-                                  e.target.src = "https://bulma.io/images/placeholders/1280x720.png";
+                                  handleImageError(e, 1280, 720);
                                 }}
                               />
                               <figcaption className="has-text-centered mt-2 has-text-grey is-size-7">

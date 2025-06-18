@@ -7,6 +7,7 @@ import LazyImage from '../../components/common/LazyImage';
 import '../../styles/bulma-home.css';
 import useRecipes from '../../hooks/useRecipes';
 import { fetchCategories } from '../../services/categoryService';
+import { getSafeImageUrl, getFullImageUrl } from '../../utils/imageUtils';
 
 const Home = () => {
   const [recipes, setRecipes] = useState([]);
@@ -41,6 +42,30 @@ const Home = () => {
   const closeSharePopup = () => {
     setShowSharePopup(false);
     setSelectedRecipe(null);
+  };
+  // Helper function to get correct image URL
+  const getRecipeImageUrl = (recipe) => {
+    let imageUrl = recipe.image_url;
+    
+    console.log('=== HOME IMAGE DEBUG ===');
+    console.log('Recipe:', recipe.title);
+    console.log('Original image_url:', imageUrl);
+    
+    // If it's an uploaded image path, convert to full URL
+    if (imageUrl && imageUrl.startsWith('/uploads/')) {
+      imageUrl = `http://localhost:5000${imageUrl}`;
+      console.log('Converted /uploads/ to full URL:', imageUrl);
+    } else if (imageUrl && imageUrl.startsWith('uploads/')) {
+      imageUrl = `http://localhost:5000/${imageUrl}`;
+      console.log('Converted uploads/ to full URL:', imageUrl);
+    }
+    
+    // Use getSafeImageUrl to handle any problematic URLs
+    const finalUrl = getSafeImageUrl(imageUrl);
+    console.log('Final URL after getSafeImageUrl:', finalUrl);
+    console.log('=== END HOME IMAGE DEBUG ===');
+    
+    return finalUrl;
   };
 
   useEffect(() => {
@@ -201,30 +226,61 @@ const Home = () => {
                 {recipes.length > 0 ? (
                   recipes.map(recipe => (
                     <div key={recipe.id} className="column is-one-third">
-                      <div className="card">                        <div className="card-image">
-                          <figure className="image is-16by9">
-                            <LazyImage 
-                              src={recipe.image_url} 
-                              alt={recipe.title}
-                              style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                              fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
-                            />
-                          </figure>
-                          <div className="recipe-time-badge">
-                            <span className="tag" style={{ 
-                              backgroundColor: 'var(--primary-color)', 
-                              color: 'var(--text-on-primary)'
+                      <div className="card">                        <div className="card-image" style={{ position: 'relative' }}>
+                          <Link to={`/recipes/${recipe.id}`} style={{ display: 'block' }}>
+                            <figure className="image is-16by9">
+                              <LazyImage 
+                                src={getRecipeImageUrl(recipe)} 
+                                alt={recipe.title}
+                                style={{ 
+                                  objectFit: 'cover', 
+                                  width: '100%', 
+                                  height: '100%',
+                                  cursor: 'pointer',
+                                  transition: 'transform 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                                onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                                fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                              />
+                            </figure>
+                          </Link><div className="recipe-time-badge" style={{
+                            position: 'absolute',
+                            top: '12px',
+                            right: '12px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            borderRadius: '20px',
+                            padding: '6px 12px',
+                            backdropFilter: 'blur(8px)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                          }}>
+                            <span style={{ 
+                              fontSize: '12px', 
+                              fontWeight: '600',
+                              color: '#363636',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
                             }}>
-                              <i className="fas fa-clock mr-1"></i> {recipe.cooking_time || recipe.cook_time || recipe.prep_time || '30'} mins
+                              <i className="fas fa-clock" style={{ fontSize: '10px', color: '#ff6b35' }}></i>
+                              {recipe.cooking_time || recipe.cook_time || recipe.prep_time || '30'} mins
                             </span>
                           </div>
                         </div>
                         <div className="card-content">
-                          <div className="media">
-                            <div className="media-content">
-                              <p className="title is-5" style={{ color: 'var(--primary-color)' }}>
-                                {recipe.title}
-                              </p>
+                          <div className="media">                            <div className="media-content">
+                              <Link to={`/recipes/${recipe.id}`} style={{ textDecoration: 'none' }}>
+                                <p className="title is-5" style={{ 
+                                  color: 'var(--primary-color)',
+                                  cursor: 'pointer',
+                                  transition: 'color 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.color = 'var(--accent-color)'}
+                                onMouseLeave={(e) => e.target.style.color = 'var(--primary-color)'}
+                                >
+                                  {recipe.title}
+                                </p>
+                              </Link>
                               <div className="tags">
                                 <span className="tag" style={{ 
                                   backgroundColor: 'var(--secondary-color)', 
@@ -258,10 +314,22 @@ const Home = () => {
                                     </span>
                                   </div>
                                 </div>
-                              </div>
-                              <div className="level-right">
+                              </div>                              <div className="level-right">
                                 <div className="level-item">
                                   <div className="buttons are-small">
+                                    <Link 
+                                      to={`/recipes/${recipe.id}`}
+                                      className="button is-primary" 
+                                      style={{ 
+                                        backgroundColor: 'var(--accent-color)', 
+                                        color: 'var(--text-on-primary)',
+                                        borderColor: 'var(--accent-color)'
+                                      }}
+                                      title="View Recipe"
+                                    >
+                                      <i className="fas fa-eye mr-1"></i>
+                                      View
+                                    </Link>
                                     <button className="button is-light" title="Add to favorites">
                                       <i className="far fa-heart"></i>
                                     </button>
