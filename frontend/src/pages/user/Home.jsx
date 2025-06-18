@@ -8,6 +8,7 @@ import '../../styles/bulma-home.css';
 import useRecipes from '../../hooks/useRecipes';
 import { fetchCategories } from '../../services/categoryService';
 import { getAverageRating } from '../../services/ratingService';
+import { favoriteService } from '../../services/favoriteService';
 import { getSafeImageUrl, getFullImageUrl } from '../../utils/imageUtils';
 
 const Home = () => {
@@ -18,6 +19,7 @@ const Home = () => {
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [recipeRatings, setRecipeRatings] = useState({});
+  const [favoriteRecipes, setFavoriteRecipes] = useState(new Set());
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const { fetchRecipes } = useRecipes();
@@ -44,7 +46,6 @@ const Home = () => {
     setShowSharePopup(false);
     setSelectedRecipe(null);
   };
-
   // Load ratings for all recipes
   const loadRecipeRatings = async (recipes) => {
     const ratings = {};
@@ -63,6 +64,53 @@ const Home = () => {
       setRecipeRatings(ratings);
     } catch (error) {
       console.error('Error loading recipe ratings:', error);
+    }
+  };
+  // Load user favorites
+  const loadUserFavorites = async () => {
+    if (!user) return;
+    
+    try {
+      console.log('Loading favorites for user:', user.id);
+      const favorites = await favoriteService.getUserFavorites(user.id);
+      console.log('Favorites loaded:', favorites);
+      const favoriteSet = new Set(favorites.map(fav => fav.recipe_id));
+      setFavoriteRecipes(favoriteSet);
+    } catch (error) {
+      console.error('Error loading user favorites:', error);
+      // Don't show alert for network errors, just log them
+      setFavoriteRecipes(new Set());
+    }
+  };
+
+  // Handle favorite toggle
+  const handleFavoriteToggle = async (recipeId) => {
+    if (!user) {
+      alert('Please login to add favorites');
+      return;
+    }
+
+    try {
+      const isFavorited = favoriteRecipes.has(recipeId);
+      
+      if (isFavorited) {
+        await favoriteService.removeFavorite(user.id, recipeId);
+        setFavoriteRecipes(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(recipeId);
+          return newSet;
+        });
+      } else {
+        await favoriteService.addFavorite(user.id, recipeId);
+        setFavoriteRecipes(prev => new Set([...prev, recipeId]));
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      if (error.message && error.message.includes('Cannot connect to server')) {
+        alert('Cannot connect to the server. Please make sure the backend is running.');
+      } else {
+        alert('Error updating favorites. Please try again.');
+      }
     }
   };
 
@@ -89,8 +137,7 @@ const Home = () => {
     console.log('=== END HOME IMAGE DEBUG ===');
     
     return finalUrl;
-  };
-  useEffect(() => {
+  };  useEffect(() => {
     const loadData = async () => {
       try {
         // Load recipes
@@ -105,6 +152,11 @@ const Home = () => {
         // Load ratings for the featured recipes
         await loadRecipeRatings(featuredRecipes);
         
+        // Load user favorites if user is logged in
+        if (user) {
+          await loadUserFavorites();
+        }
+        
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -113,7 +165,7 @@ const Home = () => {
     };
 
     loadData();
-  }, []); // Empty dependency array - hanya load sekali saat component mount
+  }, [user]); // Add user to dependency array
 
   return (
     <div className="home-page">
@@ -372,9 +424,12 @@ const Home = () => {
                                     >
                                       <i className="fas fa-eye mr-1"></i>
                                       View
-                                    </Link>
-                                    <button className="button is-light" title="Add to favorites">
-                                      <i className="far fa-heart"></i>
+                                    </Link>                                    <button 
+                                      className={`button ${favoriteRecipes.has(recipe.id) ? 'is-danger' : 'is-light'}`} 
+                                      title={favoriteRecipes.has(recipe.id) ? 'Remove from favorites' : 'Add to favorites'}
+                                      onClick={() => handleFavoriteToggle(recipe.id)}
+                                    >
+                                      <i className={`${favoriteRecipes.has(recipe.id) ? 'fas fa-heart' : 'far fa-heart'}`}></i>
                                     </button>
                                     <button 
                                       className="button" 

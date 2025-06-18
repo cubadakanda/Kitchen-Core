@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import Header from '../../components/common/Header';
 import useRecipes from '../../hooks/useRecipes';
+import { favoriteService } from '../../services/favoriteService';
+import { getAverageRating } from '../../services/ratingService';
 import { getSafeImageUrl, handleImageError } from '../../utils/imageUtils';
 import '../../styles/bulma-home.css';
 
@@ -45,37 +47,84 @@ const Profile = () => {
     } else {
       navigate('/auth');
     }
-  }, [user, navigate]);
-
-  const fetchUserData = async () => {
+  }, [user, navigate]);  const fetchUserData = async () => {
     try {
       setLoading(true);
-      // Simulate fetching user favorites (mock data for now)
-      const allRecipes = await fetchRecipes();
-      const mockFavorites = allRecipes.slice(0, 3); // Get first 3 recipes as favorites
       
-      setFavorites(mockFavorites);
-      setUserStats({
-        totalFavorites: mockFavorites.length,
-        totalRatings: 5, // Mock data
-        memberSince: 2024
-      });
+      // Fetch user's actual favorites from database
+      console.log('Fetching user data for user:', user);
+      const userFavorites = await favoriteService.getUserFavorites(user.id);
+      console.log('User favorites received:', userFavorites);
+      
+      if (userFavorites && userFavorites.length > 0) {
+        // Get all recipes to match with favorite recipe_ids
+        const allRecipes = await fetchRecipes();
+        const favoriteRecipes = allRecipes.filter(recipe => 
+          userFavorites.some(fav => fav.recipe_id === recipe.id)
+        );
+        
+        // Add ratings to favorite recipes
+        const recipesWithRatings = await Promise.all(
+          favoriteRecipes.map(async (recipe) => {
+            try {
+              const rating = await getAverageRating(recipe.id);
+              return { ...recipe, rating };
+            } catch (error) {
+              console.error(`Error loading rating for recipe ${recipe.id}:`, error);
+              return { ...recipe, rating: { average: 0, count: 0 } };
+            }
+          })
+        );
+        
+        setFavorites(recipesWithRatings);
+        setUserStats({
+          totalFavorites: recipesWithRatings.length,
+          totalRatings: 5, // You could fetch actual rating count from user's ratings
+          memberSince: new Date(user.createdAt || Date.now()).getFullYear()
+        });
+      } else {
+        console.log('No favorites found or empty response');
+        setFavorites([]);
+        setUserStats({
+          totalFavorites: 0,
+          totalRatings: 0,
+          memberSince: new Date(user.createdAt || Date.now()).getFullYear()
+        });
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error('Error fetching user data:', error);
+      setFavorites([]);
+      setUserStats({
+        totalFavorites: 0,
+        totalRatings: 0,
+        memberSince: new Date(user.createdAt || Date.now()).getFullYear()
+      });
       setLoading(false);
+      
+      // Show user-friendly message if backend is not running
+      if (error.message && error.message.includes('Cannot connect to server')) {
+        alert('Cannot connect to the server. Please make sure the backend is running on port 5000.');
+      }
     }
   };
-
   const handleRemoveFavorite = async (recipeId) => {
     try {
+      // Remove from database
+      await favoriteService.removeFavorite(user.id, recipeId);
+      
+      // Update local state
       setFavorites(favorites.filter(fav => fav.id !== recipeId));
       setUserStats(prev => ({
         ...prev,
         totalFavorites: prev.totalFavorites - 1
       }));
+      
+      console.log('Favorite removed successfully');
     } catch (error) {
       console.error('Error removing favorite:', error);
+      alert('Error removing favorite. Please try again.');
     }
   };
 
@@ -295,10 +344,27 @@ const Profile = () => {
                               style={{ objectFit: 'cover' }}
                             />
                           </figure>
-                        </div>
-                        <div className="card-content">
+                        </div>                        <div className="card-content">
                           <p className="title is-6">{recipe.title}</p>
                           <p className="content is-size-7">{recipe.description?.substring(0, 80)}...</p>
+                          
+                          {/* Rating Display */}
+                          {recipe.rating && (
+                            <div className="field mb-3">
+                              <div className="tags has-addons">
+                                <span className="tag is-warning">
+                                  <i className="fas fa-star mr-1"></i>
+                                  {recipe.rating.average > 0 ? recipe.rating.average : 'No rating'}
+                                </span>
+                                {recipe.rating.count > 0 && (
+                                  <span className="tag is-light">
+                                    {recipe.rating.count} review{recipe.rating.count !== 1 ? 's' : ''}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          
                           <div className="field is-grouped">
                             <div className="control">
                               <Link 
@@ -312,7 +378,9 @@ const Profile = () => {
                               <button 
                                 className="button is-danger is-small is-outlined"
                                 onClick={() => handleRemoveFavorite(recipe.id)}
+                                title="Remove from favorites"
                               >
+                                <i className="fas fa-heart-broken mr-1"></i>
                                 Remove
                               </button>
                             </div>

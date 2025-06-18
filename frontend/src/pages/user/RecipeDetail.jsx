@@ -6,6 +6,7 @@ import SharePopup from '../../components/common/SharePopup';
 import useRecipes from '../../hooks/useRecipes';
 import fetchRecipeById from '../../services/recipeDetailService';
 import { submitRating, getRatingsByRecipeId, getAverageRating } from '../../services/ratingService';
+import { favoriteService } from '../../services/favoriteService';
 import { getSafeImageUrl, getFullImageUrl } from '../../utils/imageUtils';
 import '../../styles/bulma-home.css';
 
@@ -55,7 +56,6 @@ const RecipeDetail = () => {
       setReviews([]);
     }
   };
-
   // Load average rating for the current recipe
   const loadAverageRating = async () => {
     try {
@@ -64,6 +64,39 @@ const RecipeDetail = () => {
     } catch (error) {
       console.error('Error loading average rating:', error);
       setAverageRating({ average: 0, count: 0 });
+    }
+  };
+
+  // Check if recipe is favorited by current user
+  const checkFavoriteStatus = async () => {
+    if (!user) return;
+    
+    try {
+      const isFav = await favoriteService.checkIsFavorite(user.id, id);
+      setIsFavorited(isFav);
+    } catch (error) {
+      console.error('Error checking favorite status:', error);
+    }
+  };
+
+  // Handle favorite toggle
+  const handleFavoriteToggle = async () => {
+    if (!user) {
+      alert('Please login to add favorites');
+      return;
+    }
+
+    try {
+      if (isFavorited) {
+        await favoriteService.removeFavorite(user.id, id);
+        setIsFavorited(false);
+      } else {
+        await favoriteService.addFavorite(user.id, id);
+        setIsFavorited(true);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Error updating favorites. Please try again.');
     }
   };
 
@@ -232,28 +265,17 @@ const RecipeDetail = () => {
         console.error('Error fetching recipe:', error);
         setLoading(false);
         navigate('/recipes');
-      }    };
-
-    loadRecipe();
+      }    };    loadRecipe();
     
     // Load reviews and average rating
     loadReviews();
     loadAverageRating();
-  }, [id, navigate, fetchRecipes, recipes]); // Add recipes to dependency
-
-  const handleAddToFavorites = async () => {
-    if (!user) {
-      alert('Please login to add favorites');      return;
-    }
     
-    try {
-      // Add/remove from favorites
-      setIsFavorited(!isFavorited);
-      console.log('Toggled favorite for recipe:', id);
-    } catch (error) {
-      console.error('Error updating favorites:', error);
+    // Check favorite status if user is logged in
+    if (user) {
+      checkFavoriteStatus();
     }
-  };
+  }, [id, navigate, fetchRecipes, recipes, user]); // Add user to dependency
   const handleRatingSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
@@ -422,12 +444,11 @@ const RecipeDetail = () => {
                 </div>
               </div>
               
-              {/* Action Buttons */}
-              <div className="field is-grouped mt-5">
+              {/* Action Buttons */}              <div className="field is-grouped mt-5">
                 <div className="control">
                   <button 
                     className={`button is-large ${isFavorited ? 'is-danger' : 'is-white'}`}
-                    onClick={handleAddToFavorites}
+                    onClick={handleFavoriteToggle}
                   >
                     <i className={`fas fa-heart mr-2`}></i>
                     {isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}
