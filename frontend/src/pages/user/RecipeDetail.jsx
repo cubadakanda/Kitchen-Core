@@ -4,6 +4,7 @@ import { AuthContext } from '../../context/AuthContext';
 import Header from '../../components/common/Header';
 import SharePopup from '../../components/common/SharePopup';
 import useRecipes from '../../hooks/useRecipes';
+import fetchRecipeById from '../../services/recipeDetailService';
 import '../../styles/bulma-home.css';
 
 const RecipeDetail = () => {
@@ -39,36 +40,83 @@ const RecipeDetail = () => {
   const closeSharePopup = () => {
     setShowSharePopup(false);
   };
-
   useEffect(() => {
     const loadRecipe = async () => {
       try {
         setLoading(true);
+        
+        // Try to fetch from API first
+        try {
+          const recipeData = await fetchRecipeById(id);
+          if (recipeData) {
+            // Process the recipe data
+            const enhancedRecipe = {
+              ...recipeData,
+              ingredients: recipeData.ingredients ? 
+                (typeof recipeData.ingredients === 'string' ? 
+                  recipeData.ingredients.split('\n').filter(item => item.trim()) : 
+                  recipeData.ingredients) : 
+                ['No ingredients available'],
+              instructions: recipeData.instructions ? 
+                (typeof recipeData.instructions === 'string' ? 
+                  recipeData.instructions.split('\n').filter(item => item.trim()) : 
+                  recipeData.instructions) : 
+                ['No instructions available'],
+              nutritionFacts: recipeData.nutritionFacts || {
+                calories: recipeData.calories || 0,
+                protein: '15g',
+                carbs: '65g',
+                fat: '12g',
+                fiber: '3g',
+                sugar: '8g'
+              },
+              difficulty: recipeData.difficulty || 'Medium',
+              servings: recipeData.servings || 4,
+              prepTime: recipeData.prep_time || 15,
+              cookTime: recipeData.cooking_time || 20
+            };
+            setRecipe(enhancedRecipe);
+            setLoading(false);
+            return;
+          }
+        } catch (apiError) {
+          console.log('API failed, trying fallback data:', apiError);
+        }
+        
+        // Fallback to mock data if API fails
+        const { fetchRecipes } = useRecipes();
         const recipesData = await fetchRecipes();
         const foundRecipe = recipesData.find(r => r.id === parseInt(id));
-        
-        if (foundRecipe) {
+          if (foundRecipe) {
           // Enhance recipe data with detailed information
           const enhancedRecipe = {
             ...foundRecipe,
-            ingredients: foundRecipe.ingredients || [
-              '2 cups rice',
-              '3 eggs',
-              '1 onion, diced',
-              '2 cloves garlic, minced',
-              '2 tablespoons soy sauce',
-              '1 tablespoon oil',
-              'Salt and pepper to taste'
-            ],
-            instructions: foundRecipe.instructions || [
-              'Heat oil in a large pan or wok over medium-high heat.',
-              'Add diced onion and cook until translucent, about 3-4 minutes.',
-              'Add minced garlic and cook for another minute.',
-              'Push vegetables to one side of the pan and scramble eggs on the other side.',
-              'Add cooked rice to the pan and stir everything together.',
-              'Add soy sauce, salt, and pepper. Stir-fry for 3-4 minutes.',
-              'Serve hot and enjoy your delicious fried rice!'
-            ],
+            ingredients: foundRecipe.ingredients ? 
+              (typeof foundRecipe.ingredients === 'string' ? 
+                foundRecipe.ingredients.split('\n') : 
+                foundRecipe.ingredients) : 
+              [
+                '2 cups rice',
+                '3 eggs', 
+                '1 onion, diced',
+                '2 cloves garlic, minced',
+                '2 tablespoons soy sauce',
+                '1 tablespoon oil',
+                'Salt and pepper to taste'
+              ],
+            instructions: foundRecipe.instructions ? 
+              (typeof foundRecipe.instructions === 'string' ? 
+                foundRecipe.instructions.split('\n') : 
+                foundRecipe.instructions) : 
+              [
+                'Heat oil in a large pan or wok over medium-high heat.',
+                'Add diced onion and cook until translucent, about 3-4 minutes.',
+                'Add minced garlic and cook for another minute.',
+                'Push vegetables to one side of the pan and scramble eggs on the other side.',
+                'Add cooked rice to the pan and stir everything together.',
+                'Add soy sauce, salt, and pepper. Stir-fry for 3-4 minutes.',
+                'Serve hot and enjoy your delicious fried rice!'
+              ],
             nutritionFacts: foundRecipe.nutritionFacts || {
               calories: foundRecipe.calories || 420,
               protein: '15g',
@@ -192,11 +240,9 @@ const RecipeDetail = () => {
         isOpen={showSharePopup}
         onClose={closeSharePopup}
         onShareComplete={handleShareComplete}
-      />
-
-      {/* Recipe Hero Section */}
+      />      {/* Recipe Hero Section */}
       <section className="section py-6" style={{
-        background: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3'}')`,
+        background: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'}')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         color: 'white',

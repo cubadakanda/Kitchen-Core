@@ -24,12 +24,12 @@ const Header = ({ user, onLogout }) => {
           <i className="fas fa-utensils brand-icon"></i>
           <span className="brand-name">Kitchen Core</span>
         </Link>
-        
-        <nav className={`main-nav ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+          <nav className={`main-nav ${mobileMenuOpen ? 'mobile-open' : ''}`}>
           <ul>
             <li><Link to="/" className="active">Home</Link></li>
             <li><Link to="/recipes">Recipes</Link></li>
             <li><Link to="/recipes?view=categories">Categories</Link></li>
+            {user && <li><Link to="/my-recipes">My Recipes</Link></li>}
             <li><Link to="/about">About</Link></li>
             <li><Link to="/contact">Contact</Link></li>
           </ul>

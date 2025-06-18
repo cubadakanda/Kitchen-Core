@@ -9,6 +9,9 @@ const Home = React.lazy(() => import('./pages/user/Home')); // Using the new hom
 const Profile = React.lazy(() => import('./pages/user/Profile'));
 const Recipes = React.lazy(() => import('./pages/user/Recipes'));
 const RecipeDetail = React.lazy(() => import('./pages/user/RecipeDetail'));
+const MyRecipes = React.lazy(() => import('./pages/user/MyRecipes'));
+const CreateRecipe = React.lazy(() => import('./pages/user/CreateRecipe'));
+const EditUserRecipe = React.lazy(() => import('./pages/user/EditRecipe'));
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 const ManageRecipes = React.lazy(() => import('./pages/admin/ManageRecipes'));
 const AddRecipe = React.lazy(() => import('./pages/admin/AddRecipe'));
@@ -66,26 +69,30 @@ function AppRoutes() {
           <Route path="/auth" element={<SlidingAuth />} />
           <Route path="/login" element={<SlidingAuth />} />
           <Route path="/register" element={<SlidingAuth />} />
-          
-          {/* User Routes - Protected */}
-          <Route path="/home" element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          } />
+            {/* User Routes - Some Protected, Some Public */}
+          <Route path="/home" element={<Home />} />
+          <Route path="/recipes" element={<Recipes />} />
+          <Route path="/recipes/:id" element={<RecipeDetail />} />
           <Route path="/profile" element={
             <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
-          } />
-          <Route path="/recipes" element={
+          } />          <Route path="/recipes/:id" element={<RecipeDetail />} />
+          
+          {/* User Recipe Management Routes - Protected */}
+          <Route path="/my-recipes" element={
             <ProtectedRoute>
-              <Recipes />
+              <MyRecipes />
             </ProtectedRoute>
           } />
-          <Route path="/recipes/:id" element={
+          <Route path="/my-recipes/create" element={
             <ProtectedRoute>
-              <RecipeDetail />
+              <CreateRecipe />
+            </ProtectedRoute>
+          } />
+          <Route path="/my-recipes/edit/:id" element={
+            <ProtectedRoute>
+              <EditUserRecipe />
             </ProtectedRoute>
           } />
           
@@ -130,10 +137,9 @@ function AppRoutes() {
               <EditUser />
             </AdminRoute>
           } />
-          
-          {/* Always redirect to auth page as default */}
-          <Route path="/" element={<Navigate to="/auth" replace />} />
-          <Route path="*" element={<Navigate to="/auth" replace />} />
+            {/* Always redirect to home page as default */}
+          <Route path="/" element={<Home />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </React.Suspense>
     </Router>

@@ -82,9 +82,9 @@ const RecipeModel = db.define('recipes', {
 });
 
 // Define associations
-RecipeModel.belongsTo(UserModel, { foreignKey: 'user_id' });
-RecipeModel.belongsTo(CategoryModel, { foreignKey: 'category_id' });
-UserModel.hasMany(RecipeModel, { foreignKey: 'user_id' });
-CategoryModel.hasMany(RecipeModel, { foreignKey: 'category_id' });
+RecipeModel.belongsTo(UserModel, { foreignKey: 'user_id', as: 'user' });
+RecipeModel.belongsTo(CategoryModel, { foreignKey: 'category_id', as: 'category' });
+UserModel.hasMany(RecipeModel, { foreignKey: 'user_id', as: 'recipes' });
+CategoryModel.hasMany(RecipeModel, { foreignKey: 'category_id', as: 'recipes' });
 
 export default RecipeModel;

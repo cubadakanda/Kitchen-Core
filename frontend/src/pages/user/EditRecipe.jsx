@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import AdminLayout from '../../layouts/AdminLayout';
+import { AuthContext } from '../../context/AuthContext';
+import Header from '../../components/common/Header';
 import { recipeService } from '../../services/recipeService';
+import '../../styles/bulma-home.css';
 
 const EditRecipe = () => {
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(false);
@@ -11,20 +14,31 @@ const EditRecipe = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [imagePreview, setImagePreview] = useState(null);  const [formData, setFormData] = useState({
+  const [imagePreview, setImagePreview] = useState(null);
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
     ingredients: '',
     instructions: '',
     cooking_time: 30,
-    prep_time: 10, // Add prep_time field
-    difficulty: 'medium',
+    prep_time: 10,
     category_id: '',
-    image: null
+    servings: '',
+    image: null,
+    status: 'published'
   });
 
-  // Fetch recipe data and categories
+  const handleLogout = () => {
+    logout();
+    navigate('/auth');
+  };
+
   useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    
     const fetchData = async () => {
       setIsFetching(true);
       
@@ -32,19 +46,31 @@ const EditRecipe = () => {
         // Fetch recipe details
         const recipeResponse = await recipeService.getRecipeById(id);
         if (recipeResponse && recipeResponse.success !== false && recipeResponse.data) {
-          const recipeData = recipeResponse.data;          setFormData({
+          const recipeData = recipeResponse.data;
+          
+          // Check if user owns this recipe
+          if (recipeData.user_id !== user.id) {
+            setError('You can only edit your own recipes');
+            setTimeout(() => {
+              navigate('/my-recipes');
+            }, 3000);
+            return;
+          }
+          
+          setFormData({
             title: recipeData.title || '',
             description: recipeData.description || '',
             ingredients: recipeData.ingredients || '',
             instructions: recipeData.instructions || '',
-            cooking_time: recipeData.cook_time || 30, // Map cook_time from API to cooking_time for form
-            prep_time: recipeData.prep_time || 10, // Add prep_time mapping
-            difficulty: recipeData.difficulty || 'medium',
+            cooking_time: recipeData.cook_time || 30,
+            prep_time: recipeData.prep_time || 10,
             category_id: recipeData.category_id || '',
             servings: recipeData.servings || '',
-            image: null
+            image: null,
+            status: recipeData.status || 'published'
           });
-            // Set image preview if available
+          
+          // Set image preview if available
           if (recipeData.image_url) {
             const imageUrl = recipeData.image_url.startsWith('http') 
               ? recipeData.image_url 
@@ -57,9 +83,9 @@ const EditRecipe = () => {
             setImagePreview(imageUrl);
           }
         } else {
-          setError('Failed to fetch recipe data');
+          setError('Recipe not found');
           setTimeout(() => {
-            navigate('/admin/recipes');
+            navigate('/my-recipes');
           }, 3000);
         }
         
@@ -72,7 +98,6 @@ const EditRecipe = () => {
           }
         } catch (err) {
           console.error('Error fetching categories:', err);
-          // Fallback categories
           setCategories([
             { id: 1, name: 'Indonesian Food' },
             { id: 2, name: 'Italian Food' },
@@ -84,7 +109,7 @@ const EditRecipe = () => {
         setError('An error occurred while fetching recipe data');
         console.error(err);
         setTimeout(() => {
-          navigate('/admin/recipes');
+          navigate('/my-recipes');
         }, 3000);
       } finally {
         setIsFetching(false);
@@ -94,24 +119,8 @@ const EditRecipe = () => {
     if (id) {
       fetchData();
     }
-  }, [id, navigate]);
+  }, [id, user, navigate]);
 
-  // Auto-hide success and error messages
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => setSuccess(null), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [success]);
-
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => setError(null), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
-
-  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -120,7 +129,6 @@ const EditRecipe = () => {
     }));
   };
 
-  // Handle image input change
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) {
@@ -140,7 +148,6 @@ const EditRecipe = () => {
     reader.readAsDataURL(file);
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -150,23 +157,25 @@ const EditRecipe = () => {
       setError('Please fill in all required fields');
       setIsLoading(false);
       return;
-    }    try {
-      // Format the recipe data for API
+    }
+
+    try {
       const recipeData = {
         category_id: formData.category_id,
         title: formData.title,
         description: formData.description,
         ingredients: formData.ingredients,
         instructions: formData.instructions,
-        cook_time: parseInt(formData.cooking_time, 10), // Map cooking_time to cook_time for API
+        cook_time: parseInt(formData.cooking_time, 10),
         prep_time: parseInt(formData.prep_time, 10),
         servings: formData.servings,
-        status: 'published'
-      };      // Handle image: if new image selected, add it; otherwise preserve existing
+        status: formData.status
+      };
+
+      // Handle image
       if (formData.image) {
         recipeData.image = formData.image;
       } else if (imagePreview) {
-        // Extract the relative path from the full URL if it's a localhost URL
         if (imagePreview.startsWith('http://localhost:5000/')) {
           recipeData.image_url = imagePreview.replace('http://localhost:5000/', '');
         } else {
@@ -179,7 +188,7 @@ const EditRecipe = () => {
       if (response && response.success !== false) {
         setSuccess('Recipe updated successfully!');
         setTimeout(() => {
-          navigate('/admin/recipes');
+          navigate('/my-recipes');
         }, 2000);
       } else {
         setError(response?.message || 'Failed to update recipe');
@@ -192,113 +201,104 @@ const EditRecipe = () => {
     }
   };
 
-  if (isFetching) {
+  if (!user) {
     return (
-      <AdminLayout>
-        <div className="section has-text-centered">
+      <div className="home-page">
+        <Header user={null} onLogout={handleLogout} />
+        <div className="section">
           <div className="container">
-            <div className="box p-6" style={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div>
-                <span className="icon is-large has-text-primary">
-                  <i className="fas fa-spinner fa-pulse fa-3x"></i>
-                </span>
-                <p className="mt-4 is-size-5 has-text-grey">Loading recipe data...</p>
-              </div>
+            <div className="has-text-centered">
+              <h3 className="title is-4">Please Login</h3>
+              <p>You need to be logged in to edit recipes.</p>
             </div>
           </div>
         </div>
-      </AdminLayout>
+      </div>
+    );
+  }
+
+  if (isFetching) {
+    return (
+      <div className="home-page">
+        <Header user={user} onLogout={handleLogout} />
+        <div className="section">
+          <div className="container">
+            <div className="has-text-centered">
+              <div className="loader is-loading"></div>
+              <p className="mt-4">Loading recipe data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="container">
-        {/* Header Section */}
-        <section className="section is-small pb-0">
-          <div className="level">
-            <div className="level-left">
-              <div className="level-item">
-                <h1 className="title has-text-weight-bold is-2">
-                  <span className="icon-text">
-                    <span className="icon mr-3 has-text-primary">
-                      <i className="fas fa-edit"></i>
-                    </span>
-                    <span>Edit Recipe</span>
-                  </span>
+    <div className="home-page">
+      <Header user={user} onLogout={handleLogout} />
+      
+      {/* Hero Section */}
+      <section className="hero is-small" style={{
+        background: `linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%)`,
+        color: 'var(--text-on-primary)'
+      }}>
+        <div className="hero-body">
+          <div className="container">
+            <div className="columns is-vcentered">
+              <div className="column">
+                <h1 className="title is-2 has-text-white">
+                  <i className="fas fa-edit mr-3"></i>
+                  Edit Recipe
                 </h1>
+                <p className="subtitle is-5 has-text-white-ter">
+                  Update your recipe "{formData.title}"
+                </p>
               </div>
-            </div>
-            <div className="level-right">
-              <div className="level-item">
+              <div className="column is-narrow">
                 <button 
-                  className="button is-primary is-outlined is-medium"
-                  onClick={() => navigate('/admin/recipes')}
+                  className="button is-white is-outlined"
+                  onClick={() => navigate('/my-recipes')}
                 >
-                  <span className="icon">
-                    <i className="fas fa-arrow-left"></i>
-                  </span>
-                  <span>Back to Recipes</span>
+                  <i className="fas fa-arrow-left mr-2"></i>
+                  Back to My Recipes
                 </button>
               </div>
             </div>
           </div>
-          <p className="subtitle is-5 has-text-grey">
-            Editing "{formData.title}"
-          </p>
-        </section>
+        </div>
+      </section>
 
-        {/* Notification Messages */}
-        <section className="section is-small py-4">
-          {success && (
-            <div className="notification is-success is-light">
-              <button className="delete" onClick={() => setSuccess(null)}></button>
-              <span className="icon-text">
-                <span className="icon">
-                  <i className="fas fa-check-circle"></i>
-                </span>
-                <span>{success}</span>
-              </span>
-            </div>
-          )}
+      {/* Form Section */}
+      <section className="section">
+        <div className="container">
+          <div className="columns is-centered">
+            <div className="column is-10">
+              {/* Messages */}
+              {success && (
+                <div className="notification is-success is-light mb-4">
+                  <button className="delete" onClick={() => setSuccess(null)}></button>
+                  <i className="fas fa-check-circle mr-2"></i>
+                  {success}
+                </div>
+              )}
 
-          {error && (
-            <div className="notification is-danger is-light">
-              <button className="delete" onClick={() => setError(null)}></button>
-              <span className="icon-text">
-                <span className="icon">
-                  <i className="fas fa-exclamation-circle"></i>
-                </span>
-                <span>{error}</span>
-              </span>
-            </div>
-          )}
-        </section>
+              {error && (
+                <div className="notification is-danger is-light mb-4">
+                  <button className="delete" onClick={() => setError(null)}></button>
+                  <i className="fas fa-exclamation-circle mr-2"></i>
+                  {error}
+                </div>
+              )}
 
-        {/* Recipe Form */}
-        <section className="section">
-          <div className="columns">
-            <div className="column is-10 is-offset-1">
-              <div className="card admin-card">
-                <header className="card-header">
-                  <p className="card-header-title">
-                    <span className="icon-text">
-                      <span className="icon">
-                        <i className="fas fa-utensils"></i>
-                      </span>
-                      <span>Recipe Information</span>
-                    </span>
-                  </p>
-                </header>
-                
+              <div className="card">
                 <div className="card-content">
                   <form onSubmit={handleSubmit}>
                     <div className="columns">
-                      {/* Left Column - Basic Info */}
+                      {/* Left Column */}
                       <div className="column is-7">
                         <div className="field">
                           <label className="label">Recipe Title *</label>
-                          <div className="control has-icons-left">
+                          <div className="control">
                             <input 
                               className="input" 
                               type="text" 
@@ -308,9 +308,6 @@ const EditRecipe = () => {
                               placeholder="Enter recipe title"
                               required
                             />
-                            <span className="icon is-small is-left">
-                              <i className="fas fa-clipboard-list"></i>
-                            </span>
                           </div>
                         </div>
 
@@ -322,19 +319,18 @@ const EditRecipe = () => {
                               name="description"
                               value={formData.description}
                               onChange={handleInputChange}
-                              placeholder="Brief description of the recipe"
+                              placeholder="Brief description of your recipe"
                               required
                               rows="3"
                             />
                           </div>
-                          <p className="help">A short and appealing description of the dish</p>
                         </div>
 
                         <div className="columns">
                           <div className="column">
                             <div className="field">
                               <label className="label">Category *</label>
-                              <div className="control has-icons-left">
+                              <div className="control">
                                 <div className="select is-fullwidth">
                                   <select
                                     name="category_id"
@@ -350,38 +346,31 @@ const EditRecipe = () => {
                                     ))}
                                   </select>
                                 </div>
-                                <span className="icon is-left">
-                                  <i className="fas fa-tag"></i>
-                                </span>
                               </div>
                             </div>
                           </div>
                           <div className="column">
                             <div className="field">
-                              <label className="label">Difficulty</label>
-                              <div className="control has-icons-left">
-                                <div className="select is-fullwidth">
-                                  <select
-                                    name="difficulty"
-                                    value={formData.difficulty}
-                                    onChange={handleInputChange}
-                                  >
-                                    <option value="easy">Easy</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="hard">Hard</option>
-                                  </select>
-                                </div>
-                                <span className="icon is-left">
-                                  <i className="fas fa-chart-line"></i>
-                                </span>
+                              <label className="label">Servings</label>
+                              <div className="control">
+                                <input 
+                                  className="input" 
+                                  type="text" 
+                                  name="servings"
+                                  value={formData.servings}
+                                  onChange={handleInputChange}
+                                  placeholder="e.g. 4 servings"
+                                />
                               </div>
                             </div>
                           </div>
-                        </div>                        <div className="columns">
+                        </div>
+
+                        <div className="columns">
                           <div className="column">
                             <div className="field">
                               <label className="label">Prep Time (minutes)</label>
-                              <div className="control has-icons-left">
+                              <div className="control">
                                 <input 
                                   className="input" 
                                   type="number" 
@@ -390,16 +379,13 @@ const EditRecipe = () => {
                                   onChange={handleInputChange}
                                   min="0"
                                 />
-                                <span className="icon is-left">
-                                  <i className="fas fa-hourglass-start"></i>
-                                </span>
                               </div>
                             </div>
                           </div>
                           <div className="column">
                             <div className="field">
                               <label className="label">Cooking Time (minutes)</label>
-                              <div className="control has-icons-left">
+                              <div className="control">
                                 <input 
                                   className="input" 
                                   type="number" 
@@ -408,28 +394,23 @@ const EditRecipe = () => {
                                   onChange={handleInputChange}
                                   min="1"
                                 />
-                                <span className="icon is-left">
-                                  <i className="fas fa-clock"></i>
-                                </span>
                               </div>
                             </div>
                           </div>
-                          <div className="column">
-                            <div className="field">
-                              <label className="label">Serving Size</label>
-                              <div className="control has-icons-left">
-                                <input 
-                                  className="input" 
-                                  type="text" 
-                                  name="servings"
-                                  value={formData.servings || ''}
-                                  onChange={handleInputChange}
-                                  placeholder="e.g. 4 servings"
-                                />
-                                <span className="icon is-left">
-                                  <i className="fas fa-users"></i>
-                                </span>
-                              </div>
+                        </div>
+
+                        <div className="field">
+                          <label className="label">Status</label>
+                          <div className="control">
+                            <div className="select is-fullwidth">
+                              <select
+                                name="status"
+                                value={formData.status}
+                                onChange={handleInputChange}
+                              >
+                                <option value="published">Published</option>
+                                <option value="draft">Draft</option>
+                              </select>
                             </div>
                           </div>
                         </div>
@@ -461,7 +442,7 @@ const EditRecipe = () => {
                               </span>
                             </label>
                           </div>
-                          <p className="help">Max file size: 2MB. Leave empty to keep the current image.</p>
+                          <p className="help">Max file size: 2MB. Leave empty to keep current image.</p>
                         </div>
 
                         <div className="image-preview mt-4">
@@ -484,9 +465,7 @@ const EditRecipe = () => {
                             <figure className="image is-4by3">
                               <div className="has-background-light is-flex is-align-items-center is-justify-content-center" style={{ height: '100%', borderRadius: '6px', border: '2px dashed #dbdbdb' }}>
                                 <div className="has-text-centered">
-                                  <span className="icon is-large has-text-grey-light">
-                                    <i className="fas fa-image fa-3x"></i>
-                                  </span>
+                                  <i className="fas fa-image fa-3x has-text-grey-light"></i>
                                   <p className="mt-3 has-text-grey">No image available</p>
                                 </div>
                               </div>
@@ -497,7 +476,7 @@ const EditRecipe = () => {
                     </div>
 
                     {/* Ingredients and Instructions */}
-                    <div className="columns mt-5">
+                    <div className="columns mt-4">
                       <div className="column is-6">
                         <div className="field">
                           <label className="label">Ingredients</label>
@@ -537,7 +516,7 @@ const EditRecipe = () => {
                         <button 
                           type="button" 
                           className="button is-light"
-                          onClick={() => navigate('/admin/recipes')}
+                          onClick={() => navigate('/my-recipes')}
                         >
                           Cancel
                         </button>
@@ -548,10 +527,8 @@ const EditRecipe = () => {
                           className={`button is-primary ${isLoading ? 'is-loading' : ''}`}
                           disabled={isLoading}
                         >
-                          <span className="icon">
-                            <i className="fas fa-save"></i>
-                          </span>
-                          <span>Update Recipe</span>
+                          <i className="fas fa-save mr-2"></i>
+                          Update Recipe
                         </button>
                       </div>
                     </div>
@@ -560,9 +537,9 @@ const EditRecipe = () => {
               </div>
             </div>
           </div>
-        </section>
-      </div>
-    </AdminLayout>
+        </div>
+      </section>
+    </div>
   );
 };
 

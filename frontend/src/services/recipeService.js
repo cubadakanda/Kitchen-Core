@@ -271,7 +271,6 @@ export const recipeService = {
       };
     }
   },
-
   // Update existing recipe
   updateRecipe: async (id, recipeData) => {
     try {
@@ -290,11 +289,15 @@ export const recipeService = {
         servings: recipeData.servings || '',
         status: recipeData.status || 'published'
       };
-      
-      // Handle image upload if needed
+        // Handle image upload if needed
       if (recipeData.image && typeof recipeData.image !== 'string') {
         // In a real app, you would upload the image to a server here
-        formattedData.image_url = URL.createObjectURL(recipeData.image); // Temporary preview URL
+        // For now, we'll just use a placeholder since we don't have image upload functionality
+        console.log('New image file detected, but image upload not implemented');
+        // Don't set image_url for new files, let backend handle it
+      } else if (recipeData.image_url) {
+        // Preserve existing image_url if no new image is selected
+        formattedData.image_url = recipeData.image_url;
       }
       
       const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
