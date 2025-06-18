@@ -5,6 +5,7 @@ import Header from '../../components/common/Header';
 import SharePopup from '../../components/common/SharePopup';
 import useRecipes from '../../hooks/useRecipes';
 import fetchRecipeById from '../../services/recipeDetailService';
+import { submitRating, getRatingsByRecipeId, getAverageRating } from '../../services/ratingService';
 import { getSafeImageUrl, getFullImageUrl } from '../../utils/imageUtils';
 import '../../styles/bulma-home.css';
 
@@ -20,6 +21,9 @@ const RecipeDetail = () => {
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
   const [isFavorited, setIsFavorited] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState({ average: 0, count: 0 });
+  const [submittingRating, setSubmittingRating] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -37,10 +41,32 @@ const RecipeDetail = () => {
     // Clear message after 3 seconds
     setTimeout(() => setShareMessage(''), 3000);
   };
-
   const closeSharePopup = () => {
     setShowSharePopup(false);
   };
+
+  // Load reviews for the current recipe
+  const loadReviews = async () => {
+    try {
+      const reviewsData = await getRatingsByRecipeId(id);
+      setReviews(reviewsData);
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+      setReviews([]);
+    }
+  };
+
+  // Load average rating for the current recipe
+  const loadAverageRating = async () => {
+    try {
+      const avgData = await getAverageRating(id);
+      setAverageRating(avgData);
+    } catch (error) {
+      console.error('Error loading average rating:', error);
+      setAverageRating({ average: 0, count: 0 });
+    }
+  };
+
   // Helper function to get the correct image URL
   const getRecipeImageUrl = (recipe) => {
     console.log('=== RECIPE IMAGE URL DEBUG ===');
@@ -206,8 +232,13 @@ const RecipeDetail = () => {
         console.error('Error fetching recipe:', error);
         setLoading(false);
         navigate('/recipes');
-      }
-    };    loadRecipe();
+      }    };
+
+    loadRecipe();
+    
+    // Load reviews and average rating
+    loadReviews();
+    loadAverageRating();
   }, [id, navigate, fetchRecipes, recipes]); // Add recipes to dependency
 
   const handleAddToFavorites = async () => {
@@ -223,7 +254,6 @@ const RecipeDetail = () => {
       console.error('Error updating favorites:', error);
     }
   };
-
   const handleRatingSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
@@ -236,14 +266,35 @@ const RecipeDetail = () => {
       return;
     }
 
+    setSubmittingRating(true);
+
     try {
-      // Submit rating
-      console.log('Submitting rating:', { rating, comment });
+      // Prepare rating data
+      const ratingData = {
+        recipe_id: parseInt(id),
+        user_id: user.id,
+        rating: rating,
+        review_text: comment.trim() || null
+      };
+
+      // Submit rating to database
+      console.log('Submitting rating:', ratingData);
+      await submitRating(ratingData);
+      
+      // Reset form
       setRating(0);
       setComment('');
+      
+      // Refresh reviews and average rating
+      await loadReviews();
+      await loadAverageRating();
+      
       alert('Rating submitted successfully!');
     } catch (error) {
       console.error('Error submitting rating:', error);
+      alert('Error submitting rating. Please try again.');
+    } finally {
+      setSubmittingRating(false);
     }
   };
 
@@ -480,7 +531,93 @@ const RecipeDetail = () => {
                   ) : (
                     <p className="has-text-grey">No instructions available.</p>
                   )}
-                </div>
+                </div>              </div>
+
+              {/* Reviews & Average Rating Display */}
+              <div className="box mt-5">
+                <h2 className="title is-4">
+                  <i className="fas fa-comments mr-2 has-text-info"></i>
+                  Reviews ({averageRating.count})
+                </h2>
+                
+                {/* Average Rating Display */}
+                {averageRating.count > 0 && (
+                  <div className="mb-4">
+                    <div className="level">
+                      <div className="level-left">
+                        <div className="level-item">
+                          <div className="has-text-centered">
+                            <p className="title is-2 has-text-warning">{averageRating.average}</p>
+                            <div className="star-rating">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <i
+                                  key={star}
+                                  className={`fas fa-star ${
+                                    star <= Math.round(averageRating.average) ? 'has-text-warning' : 'has-text-grey-light'
+                                  }`}
+                                ></i>
+                              ))}
+                            </div>
+                            <p className="subtitle is-6">Based on {averageRating.count} review{averageRating.count !== 1 ? 's' : ''}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Individual Reviews */}
+                {reviews.length > 0 ? (
+                  <div className="reviews-list">
+                    {reviews.map((review, index) => (
+                      <div key={review.id || index} className="box is-shadowless has-background-light mb-3">
+                        <div className="media">
+                          <div className="media-left">
+                            <figure className="image is-32x32">
+                              <i className="fas fa-user-circle fa-2x has-text-grey"></i>
+                            </figure>
+                          </div>
+                          <div className="media-content">
+                            <div className="content">
+                              <div className="level is-mobile">
+                                <div className="level-left">
+                                  <div className="level-item">
+                                    <strong>User #{review.user_id}</strong>
+                                  </div>
+                                </div>
+                                <div className="level-right">
+                                  <div className="level-item">
+                                    <div className="star-rating">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <i
+                                          key={star}
+                                          className={`fas fa-star ${
+                                            star <= review.rating ? 'has-text-warning' : 'has-text-grey-light'
+                                          }`}
+                                          style={{ fontSize: '0.8rem' }}
+                                        ></i>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              {review.review_text && (
+                                <p className="mt-2">{review.review_text}</p>
+                              )}
+                              <small className="has-text-grey">
+                                {new Date(review.created_at).toLocaleDateString()}
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="notification is-light">
+                    <p>No reviews yet. Be the first to review this recipe!</p>
+                  </div>
+                )}
               </div>
 
               {/* Rating Section */}
@@ -527,14 +664,13 @@ const RecipeDetail = () => {
                     </div>
                     
                     <div className="field">
-                      <div className="control">
-                        <button 
+                      <div className="control">                        <button 
                           type="submit" 
-                          className="button is-primary"
-                          disabled={rating === 0}
+                          className={`button is-primary ${submittingRating ? 'is-loading' : ''}`}
+                          disabled={rating === 0 || submittingRating}
                         >
                           <i className="fas fa-paper-plane mr-2"></i>
-                          Submit Review
+                          {submittingRating ? 'Submitting...' : 'Submit Review'}
                         </button>
                       </div>
                     </div>

@@ -7,6 +7,7 @@ import LazyImage from '../../components/common/LazyImage';
 import '../../styles/bulma-home.css';
 import useRecipes from '../../hooks/useRecipes';
 import { fetchCategories } from '../../services/categoryService';
+import { getAverageRating } from '../../services/ratingService';
 import { getSafeImageUrl, getFullImageUrl } from '../../utils/imageUtils';
 
 const Home = () => {
@@ -16,6 +17,7 @@ const Home = () => {
   const [shareMessage, setShareMessage] = useState('');
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [recipeRatings, setRecipeRatings] = useState({});
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const { fetchRecipes } = useRecipes();
@@ -38,11 +40,32 @@ const Home = () => {
     // Clear message after 3 seconds
     setTimeout(() => setShareMessage(''), 3000);
   };
-
   const closeSharePopup = () => {
     setShowSharePopup(false);
     setSelectedRecipe(null);
   };
+
+  // Load ratings for all recipes
+  const loadRecipeRatings = async (recipes) => {
+    const ratings = {};
+    try {
+      await Promise.all(
+        recipes.map(async (recipe) => {
+          try {
+            const ratingData = await getAverageRating(recipe.id);
+            ratings[recipe.id] = ratingData;
+          } catch (error) {
+            console.error(`Error loading rating for recipe ${recipe.id}:`, error);
+            ratings[recipe.id] = { average: 0, count: 0 };
+          }
+        })
+      );
+      setRecipeRatings(ratings);
+    } catch (error) {
+      console.error('Error loading recipe ratings:', error);
+    }
+  };
+
   // Helper function to get correct image URL
   const getRecipeImageUrl = (recipe) => {
     let imageUrl = recipe.image_url;
@@ -67,24 +90,29 @@ const Home = () => {
     
     return finalUrl;
   };
-
   useEffect(() => {
     const loadData = async () => {
       try {
         // Load recipes
         const recipesData = await fetchRecipes();
-        setRecipes(recipesData.slice(0, 6));
+        const featuredRecipes = recipesData.slice(0, 6);
+        setRecipes(featuredRecipes);
 
         // Load categories from database
         const categoriesData = await fetchCategories();
         setCategories(categoriesData);
+        
+        // Load ratings for the featured recipes
+        await loadRecipeRatings(featuredRecipes);
         
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
         setLoading(false);
       }
-    };    loadData();
+    };
+
+    loadData();
   }, []); // Empty dependency array - hanya load sekali saat component mount
 
   return (
@@ -280,16 +308,31 @@ const Home = () => {
                                 >
                                   {recipe.title}
                                 </p>
-                              </Link>
-                              <div className="tags">
-                                <span className="tag" style={{ 
-                                  backgroundColor: 'var(--secondary-color)', 
-                                  color: 'var(--text-on-secondary)' 
-                                }}>
-                                  <i className="fas fa-star mr-1"></i> 4.5
-                                </span>
-                                <span className="tag is-light">
-                                  <i className="fas fa-eye mr-1"></i> 234 views
+                              </Link>                              <div className="tags">
+                                {recipeRatings[recipe.id] ? (
+                                  <span className="tag" style={{ 
+                                    backgroundColor: recipeRatings[recipe.id].average > 0 ? 'var(--secondary-color)' : '#e0e0e0', 
+                                    color: recipeRatings[recipe.id].average > 0 ? 'var(--text-on-secondary)' : '#666' 
+                                  }}>
+                                    <i className="fas fa-star mr-1"></i> 
+                                    {recipeRatings[recipe.id].average > 0 
+                                      ? recipeRatings[recipe.id].average 
+                                      : 'No rating'
+                                    }
+                                    {recipeRatings[recipe.id].count > 0 && (
+                                      <span className="ml-1">({recipeRatings[recipe.id].count})</span>
+                                    )}
+                                  </span>
+                                ) : (
+                                  <span className="tag" style={{ 
+                                    backgroundColor: '#e0e0e0', 
+                                    color: '#666' 
+                                  }}>
+                                    <i className="fas fa-star mr-1"></i> Loading...
+                                  </span>
+                                )}                                <span className="tag is-light">
+                                  <i className="fas fa-clock mr-1"></i> 
+                                  {recipe.cooking_time || recipe.cook_time || recipe.prep_time || '30'} mins
                                 </span>
                               </div>
                             </div>

@@ -24,10 +24,13 @@ export const getRecipeRatingById = async(req, res) =>{
 
 export const createRecipeRating = async(req, res) =>{
     try {
-        await RecipeRatingModel.create(req.body);
-        res.status(201).json({msg: "rating created"});
+        console.log('Creating rating with data:', req.body);
+        const newRating = await RecipeRatingModel.create(req.body);
+        console.log('Rating created successfully:', newRating);
+        res.status(201).json({msg: "rating created", data: newRating});
     } catch (error){
-        console.log(error.message);
+        console.error('Error creating rating:', error);
+        res.status(500).json({error: error.message});
     }
 }
 
@@ -60,20 +63,25 @@ export const deleteRecipeRating = async(req, res) =>{
 // Get ratings for a specific recipe
 export const getRecipeRatingsByRecipeId = async(req, res) =>{
     try {
+        console.log('Fetching ratings for recipe ID:', req.params.recipeId);
         const response = await RecipeRatingModel.findAll({
             where:{
                 recipe_id: req.params.recipeId
-            }
+            },
+            order: [['created_at', 'DESC']]
         });
+        console.log('Found ratings:', response.length);
         res.status(200).json(response);
     } catch (error){
-        console.log(error.message);
+        console.error('Error fetching ratings:', error);
+        res.status(500).json({error: error.message});
     }
 }
 
 // Get average rating for a recipe
 export const getRecipeAverageRating = async(req, res) =>{
     try {
+        console.log('Calculating average rating for recipe ID:', req.params.recipeId);
         const ratings = await RecipeRatingModel.findAll({
             where:{
                 recipe_id: req.params.recipeId
@@ -88,11 +96,13 @@ export const getRecipeAverageRating = async(req, res) =>{
         const sum = ratings.reduce((acc, item) => acc + item.rating, 0);
         const average = sum / ratings.length;
         
+        console.log(`Average rating: ${average}, Count: ${ratings.length}`);
         res.status(200).json({ 
             average: parseFloat(average.toFixed(1)), 
             count: ratings.length 
         });
     } catch (error){
-        console.log(error.message);
+        console.error('Error calculating average rating:', error);
+        res.status(500).json({error: error.message});
     }
 }
