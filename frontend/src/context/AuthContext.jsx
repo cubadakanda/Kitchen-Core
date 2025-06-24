@@ -30,11 +30,13 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('token', userData.token);
     localStorage.setItem('user', JSON.stringify(userData.user));
   };
-
   const logout = () => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    
+    // Force redirect to auth page after logout
+    window.location.href = '/auth';
   };
 
   const value = {

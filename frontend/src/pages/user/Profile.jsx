@@ -55,13 +55,13 @@ const Profile = () => {
       console.log('Fetching user data for user:', user);
       const userFavorites = await favoriteService.getUserFavorites(user.id);
       console.log('User favorites received:', userFavorites);
-      
-      if (userFavorites && userFavorites.length > 0) {
-        // Get all recipes to match with favorite recipe_ids
-        const allRecipes = await fetchRecipes();
-        const favoriteRecipes = allRecipes.filter(recipe => 
-          userFavorites.some(fav => fav.recipe_id === recipe.id)
-        );
+        if (userFavorites && userFavorites.length > 0) {
+        // Extract recipe data from favorites (now includes recipe info)
+        const favoriteRecipes = userFavorites
+          .filter(fav => fav.recipe && fav.recipe.id) // Only include favorites that have valid recipe data
+          .map(fav => fav.recipe); // Extract the recipe object
+        
+        console.log('Filtered favorite recipes:', favoriteRecipes.length);
         
         // Add ratings to favorite recipes
         const recipesWithRatings = await Promise.all(

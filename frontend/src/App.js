@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
+import Debug from './Debug'; // Import debug utilities
 import SlidingAuth from './components/auth/SlidingAuth';
 
 // Lazy load components for better performance
@@ -14,6 +15,7 @@ const CreateRecipe = React.lazy(() => import('./pages/user/CreateRecipe'));
 const EditUserRecipe = React.lazy(() => import('./pages/user/EditRecipe'));
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 const ManageRecipes = React.lazy(() => import('./pages/admin/ManageRecipes'));
+const ManageRatings = React.lazy(() => import('./pages/admin/ManageRatings'));
 const AddRecipe = React.lazy(() => import('./pages/admin/AddRecipe'));
 const EditRecipe = React.lazy(() => import('./pages/admin/EditRecipe'));
 const ManageCategories = React.lazy(() => import('./pages/admin/ManageCategories'));
@@ -59,20 +61,57 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+// Root Route Component - handles initial routing logic
+const RootRoute = () => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <Loading />;
+  }
+  
+  // If user is not logged in, redirect to auth
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  // If user is logged in, redirect based on role
+  if (user.role === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  } else {
+    return <Navigate to="/home" replace />;
+  }
+};
+
 function AppRoutes() {
-  // Simplified routing - always direct to auth first
   return (
     <Router>
       <React.Suspense fallback={<Loading />}>
         <Routes>
+          {/* Root route - handles initial authentication check */}
+          <Route path="/" element={<RootRoute />} />
+          
           {/* Auth Routes */}
           <Route path="/auth" element={<SlidingAuth />} />
-          <Route path="/login" element={<SlidingAuth />} />
-          <Route path="/register" element={<SlidingAuth />} />
-            {/* User Routes - Some Protected, Some Public */}
-          <Route path="/home" element={<Home />} />
-          <Route path="/recipes" element={<Recipes />} />
-          <Route path="/recipes/:id" element={<RecipeDetail />} />          <Route path="/profile" element={
+          <Route path="/login" element={<Navigate to="/auth" replace />} />
+          <Route path="/register" element={<Navigate to="/auth" replace />} />
+          
+          {/* User Routes - Protected */}
+          <Route path="/home" element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          } />
+          <Route path="/recipes" element={
+            <ProtectedRoute>
+              <Recipes />
+            </ProtectedRoute>
+          } />
+          <Route path="/recipes/:id" element={
+            <ProtectedRoute>
+              <RecipeDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
             <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
@@ -100,11 +139,13 @@ function AppRoutes() {
             <AdminRoute>
               <AdminDashboard />
             </AdminRoute>
-          } />          <Route path="/admin/recipes" element={
+          } />
+          <Route path="/admin/recipes" element={
             <AdminRoute>
               <ManageRecipes />
             </AdminRoute>
-          } />          <Route path="/admin/recipes/add" element={
+          } />
+          <Route path="/admin/recipes/add" element={
             <AdminRoute>
               <React.Suspense fallback={<Loading />}>
                 <AddRecipe />
@@ -117,12 +158,17 @@ function AppRoutes() {
                 <EditRecipe />
               </React.Suspense>
             </AdminRoute>
-          } />
-          <Route path="/admin/categories" element={
+          } />          <Route path="/admin/categories" element={
             <AdminRoute>
               <ManageCategories />
             </AdminRoute>
-          } /><Route path="/admin/users" element={
+          } />
+          <Route path="/admin/ratings" element={
+            <AdminRoute>
+              <ManageRatings />
+            </AdminRoute>
+          } />
+          <Route path="/admin/users" element={
             <AdminRoute>
               <ManageUsers />
             </AdminRoute>
@@ -131,13 +177,14 @@ function AppRoutes() {
             <AdminRoute>
               <AddUser />
             </AdminRoute>
-          } />          <Route path="/admin/users/edit/:id" element={
+          } />
+          <Route path="/admin/users/edit/:id" element={
             <AdminRoute>
               <EditUser />
             </AdminRoute>
           } />
-            {/* Always redirect to home page as default */}
-          <Route path="/" element={<Home />} />
+          
+          {/* Catch all route - redirect to root */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </React.Suspense>
@@ -151,6 +198,7 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
+      <Debug /> {/* Add Debug component to expose utilities */}
       <AppRoutes />
     </AuthProvider>
   );

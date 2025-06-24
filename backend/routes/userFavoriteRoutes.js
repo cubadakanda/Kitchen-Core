@@ -8,9 +8,9 @@ import {
 } from "../controllers/user_favoritesControllers.js";
 
 const router = express.Router();
-router.get('/favorites', getUserFavorites);
-router.get('/favorites/user/:userId/recipe/:recipeId', getUserFavoriteById);
-router.get('/favorites/user/:userId', getUserFavoritesByUserId);
-router.post('/favorites', createUserFavorite);
-router.delete('/favorites/user/:userId/recipe/:recipeId', deleteUserFavorite);
+router.get('/user-favorites', getUserFavorites);
+router.get('/user-favorites/user/:userId/recipe/:recipeId', getUserFavoriteById);
+router.get('/user-favorites/user/:userId', getUserFavoritesByUserId);
+router.post('/user-favorites', createUserFavorite);
+router.delete('/user-favorites/user/:userId/recipe/:recipeId', deleteUserFavorite);
 export default router;

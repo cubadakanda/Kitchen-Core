@@ -1,4 +1,7 @@
 import UserFavoriteModel from "../models/user_favoritesModel.js";
+import RecipeModel from "../models/recipesModel.js";
+import CategoryModel from "../models/categoriesModel.js";
+import UserModel from "../models/usersModel.js";
 
 export const getUserFavorites = async(req, res) =>{
     try {
@@ -56,16 +59,64 @@ export const deleteUserFavorite = async(req, res) =>{
 export const getUserFavoritesByUserId = async(req, res) =>{
     try {
         console.log('Fetching favorites for user ID:', req.params.userId);
-        const response = await UserFavoriteModel.findAll({
-            where:{
+        
+        // Try manual query approach to avoid association issues
+        const favorites = await UserFavoriteModel.findAll({
+            where: {
                 user_id: req.params.userId
             }
-            // Removed include for now to fix the error
         });
-        console.log('Found favorites:', response.length);
-        res.status(200).json(response);
+        
+        console.log('Found favorites:', favorites.length);
+        
+        if (favorites.length === 0) {
+            return res.status(200).json([]);
+        }
+        
+        // Manually fetch recipe data for each favorite
+        const favoritesWithRecipes = await Promise.all(
+            favorites.map(async (favorite) => {
+                try {
+                    const recipe = await RecipeModel.findByPk(favorite.recipe_id, {
+                        attributes: ['id', 'title', 'description', 'image_url', 'cooking_time', 'prep_time', 'calories'],
+                        include: [
+                            {
+                                model: CategoryModel,
+                                as: 'category',
+                                attributes: ['id', 'name']
+                            },
+                            {
+                                model: UserModel,
+                                as: 'user',
+                                attributes: ['id', 'name']
+                            }
+                        ]
+                    });
+                    
+                    return {
+                        user_id: favorite.user_id,
+                        recipe_id: favorite.recipe_id,
+                        created_at: favorite.created_at,
+                        recipe: recipe
+                    };
+                } catch (recipeError) {
+                    console.error('Error fetching recipe:', favorite.recipe_id, recipeError.message);
+                    return {
+                        user_id: favorite.user_id,
+                        recipe_id: favorite.recipe_id,
+                        created_at: favorite.created_at,
+                        recipe: null
+                    };
+                }
+            })
+        );
+        
+        console.log('Successfully processed favorites with recipes');
+        res.status(200).json(favoritesWithRecipes);
+        
     } catch (error){
         console.error('Error fetching user favorites:', error);
+        console.error('Error details:', error.stack);
         res.status(500).json({error: error.message});
     }
 }

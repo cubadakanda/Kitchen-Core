@@ -37,8 +37,14 @@ export const isProblematicImageUrl = (url) => {
   // Allow our uploaded images from localhost:5000/uploads
   if (url.startsWith('http://localhost:5000/uploads/')) return false;
   
-  // Block other localhost URLs that are not our uploads or unsplash
-  if (url.startsWith('http://localhost') && !url.includes('unsplash') && !url.includes('/uploads/')) return true;
+  // Allow full localhost:5000 URLs for our backend
+  if (url.startsWith('http://localhost:5000/')) return false;
+  
+  // Allow Unsplash images
+  if (url.includes('unsplash.com') || url.includes('images.unsplash.com')) return false;
+  
+  // Block other localhost URLs that are not our backend
+  if (url.startsWith('http://localhost') && !url.includes('5000')) return true;
   
   return false;
 };
@@ -138,6 +144,11 @@ export const getFullImageUrl = (imagePath) => {
   // If it starts with uploads/ (without leading slash)
   if (imagePath.startsWith('uploads/')) {
     return `http://localhost:5000/${imagePath}`;
+  }
+  
+  // If it's just a filename, assume it's in uploads directory
+  if (!imagePath.includes('/') && !imagePath.includes('http')) {
+    return `http://localhost:5000/uploads/${imagePath}`;
   }
   
   // Default fallback

@@ -41,11 +41,15 @@ const AdminSidebar = ({ collapsed }) => {
           path: '/admin/recipes/add'
         }
       ]
-    },
-    {
+    },    {
       icon: "tags",
       label: 'Categories',
       path: '/admin/categories'
+    },
+    {
+      icon: "star",
+      label: 'Ratings',
+      path: '/admin/ratings'
     },
     {
       icon: "users",

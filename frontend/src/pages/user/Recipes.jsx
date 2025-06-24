@@ -6,8 +6,6 @@ import SharePopup from '../../components/common/SharePopup';
 import LazyImage from '../../components/common/LazyImage';
 import useRecipes from '../../hooks/useRecipes';
 import { fetchCategories } from '../../services/categoryService';
-import { getAverageRating } from '../../services/ratingService';
-import { favoriteService } from '../../services/favoriteService';
 import { getSafeImageUrl, getFullImageUrl } from '../../utils/imageUtils';
 import '../../styles/bulma-home.css';
 
@@ -15,9 +13,7 @@ const Recipes = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const { fetchRecipes } = useRecipes();  const [recipes, setRecipes] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [recipeRatings, setRecipeRatings] = useState({});
-  const [favoriteRecipes, setFavoriteRecipes] = useState(new Set());const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]);  const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true); // Prevent flickering on initial load
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
@@ -53,67 +49,6 @@ const Recipes = () => {
     setSelectedRecipe(null);
   };
 
-  // Load ratings for all recipes
-  const loadRecipeRatings = async (recipes) => {
-    try {
-      const ratings = {};
-      await Promise.all(
-        recipes.map(async (recipe) => {
-          try {
-            const rating = await getAverageRating(recipe.id);
-            ratings[recipe.id] = rating;
-          } catch (error) {
-            console.error(`Error loading rating for recipe ${recipe.id}:`, error);
-            ratings[recipe.id] = { average: 0, count: 0 };
-          }
-        })
-      );
-      setRecipeRatings(ratings);
-    } catch (error) {
-      console.error('Error loading recipe ratings:', error);
-    }
-  };
-
-  // Load user favorites
-  const loadUserFavorites = async () => {
-    if (!user?.id) return;
-    
-    try {
-      const favorites = await favoriteService.getFavorites(user.id);
-      setFavoriteRecipes(new Set(favorites.map(fav => fav.id)));
-    } catch (error) {
-      console.error('Error loading favorites:', error);
-      // Don't show error to user, just log it
-    }
-  };
-
-  // Handle favorite toggle
-  const handleFavoriteToggle = async (recipeId) => {
-    if (!user?.id) {
-      alert('Please login to add favorites');
-      return;
-    }
-
-    try {
-      const isFavorite = favoriteRecipes.has(recipeId);
-      
-      if (isFavorite) {
-        await favoriteService.removeFavorite(user.id, recipeId);
-        setFavoriteRecipes(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(recipeId);
-          return newSet;
-        });
-      } else {
-        await favoriteService.addFavorite(user.id, recipeId);
-        setFavoriteRecipes(prev => new Set([...prev, recipeId]));
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      alert('Error updating favorite. Please try again.');
-    }
-  };
-
   // Helper function to get correct image URL
   const getRecipeImageUrl = (recipe) => {
     let imageUrl = recipe.image_url;
@@ -128,6 +63,7 @@ const Recipes = () => {
     // Use getSafeImageUrl to handle any problematic URLs
     return getSafeImageUrl(imageUrl);
   };
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -141,10 +77,6 @@ const Recipes = () => {
         const categoriesData = await fetchCategories();
         setCategories(categoriesData);
         
-        // Load ratings and favorites
-        await loadRecipeRatings(recipesData);
-        await loadUserFavorites();
-        
         setLoading(false);
         setInitialLoad(false);
       } catch (error) {
@@ -155,7 +87,7 @@ const Recipes = () => {
     };
 
     loadData();
-  }, []);// Empty dependency array - hanya load sekali saat component mount
+  }, []); // Empty dependency array - hanya load sekali saat component mount
   // Use useMemo to optimize filtering and prevent unnecessary re-computations
   const filteredRecipes = useMemo(() => {
     // Filter and sort recipes
@@ -411,29 +343,14 @@ const Recipes = () => {
                             >
                               {recipe.title}
                             </p>
-                          </Link>                          <div className="tags">
-                            {recipeRatings[recipe.id] ? (
-                              <span className="tag" style={{ 
-                                backgroundColor: recipeRatings[recipe.id].average > 0 ? 'var(--secondary-color)' : '#e0e0e0', 
-                                color: recipeRatings[recipe.id].average > 0 ? 'var(--text-on-secondary)' : '#666' 
-                              }}>
-                                <i className="fas fa-star mr-1"></i> 
-                                {recipeRatings[recipe.id].average > 0 
-                                  ? recipeRatings[recipe.id].average 
-                                  : 'No rating'
-                                }
-                                {recipeRatings[recipe.id].count > 0 && (
-                                  <span className="ml-1">({recipeRatings[recipe.id].count})</span>
-                                )}
-                              </span>
-                            ) : (
-                              <span className="tag" style={{ 
-                                backgroundColor: '#e0e0e0', 
-                                color: '#666' 
-                              }}>
-                                <i className="fas fa-star mr-1"></i> Loading...
-                              </span>
-                            )}
+                          </Link>
+                          <div className="tags">
+                            <span className="tag" style={{ 
+                              backgroundColor: '#e0e0e0', 
+                              color: '#666' 
+                            }}>
+                              <i className="fas fa-star mr-1"></i> No rating
+                            </span>
                             <span className="tag is-light">
                               <i className="fas fa-clock mr-1"></i> 
                               {recipe.cooking_time || recipe.cook_time || recipe.prep_time || '30'} mins
@@ -477,12 +394,12 @@ const Recipes = () => {
                                 >
                                   <i className="fas fa-eye mr-1"></i>
                                   View
-                                </Link>                                <button 
-                                  className={`button ${favoriteRecipes.has(recipe.id) ? 'is-danger' : 'is-light'}`} 
-                                  title={favoriteRecipes.has(recipe.id) ? 'Remove from favorites' : 'Add to favorites'}
-                                  onClick={() => handleFavoriteToggle(recipe.id)}
+                                </Link>
+                                <button 
+                                  className="button is-light" 
+                                  title="Add to favorites"
                                 >
-                                  <i className={favoriteRecipes.has(recipe.id) ? "fas fa-heart" : "far fa-heart"}></i>
+                                  <i className="far fa-heart"></i>
                                 </button>
                                 <button 
                                   className="button" 

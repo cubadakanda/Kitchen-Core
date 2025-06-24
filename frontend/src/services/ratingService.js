@@ -115,3 +115,47 @@ export const deleteRating = async (ratingId) => {
     throw error;
   }
 };
+
+// Get all ratings for admin dashboard
+export const getAllRatings = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/ratings`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching all ratings:', error);
+    throw error;
+  }
+};
+
+// Get rating statistics for admin dashboard
+export const getRatingStats = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/ratings/stats`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching rating stats:', error);
+    throw error;
+  }
+};

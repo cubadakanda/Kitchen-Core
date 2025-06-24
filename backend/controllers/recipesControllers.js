@@ -1,6 +1,8 @@
 import RecipeModel from "../models/recipesModel.js";
 import CategoryModel from "../models/categoriesModel.js";
 import UserModel from "../models/usersModel.js";
+import RecipeRatingModel from "../models/recipe_ratingsModel.js";
+import db from "../config/Database.js";
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -24,7 +26,26 @@ export const getRecipes = async(req, res) =>{
                 }
             ]
         });
-        res.status(200).json(response);
+
+        // Calculate average rating for each recipe
+        const recipesWithRating = await Promise.all(response.map(async (recipe) => {
+            const ratings = await RecipeRatingModel.findAll({
+                where: { recipe_id: recipe.id },
+                attributes: ['rating']
+            });
+            
+            const avgRating = ratings.length > 0 
+                ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length 
+                : 0;
+            
+            return {
+                ...recipe.toJSON(),
+                avg_rating: parseFloat(avgRating.toFixed(1)),
+                rating_count: ratings.length
+            };
+        }));
+
+        res.status(200).json(recipesWithRating);
     } catch (error){
         console.log(error.message);
         res.status(500).json({ 

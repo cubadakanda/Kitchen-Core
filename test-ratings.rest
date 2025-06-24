@@ -1,0 +1,42 @@
+### Testing Rating Endpoints
+
+# Test 1: Get all ratings
+GET http://localhost:5000/api/ratings
+Content-Type: application/json
+
+###
+
+# Test 2: Get rating statistics
+GET http://localhost:5000/api/ratings/stats
+Content-Type: application/json
+
+###
+
+# Test 3: Get all recipes (should include avg_rating)
+GET http://localhost:5000/api/recipes
+Content-Type: application/json
+
+###
+
+# Test 4: Create a new rating
+POST http://localhost:5000/api/ratings
+Content-Type: application/json
+
+{
+  "user_id": 1,
+  "recipe_id": 1,
+  "rating": 5,
+  "review_text": "Test rating from REST client"
+}
+
+###
+
+# Test 5: Get specific recipe ratings
+GET http://localhost:5000/api/ratings/recipe/1
+Content-Type: application/json
+
+###
+
+# Test 6: Get average rating for specific recipe
+GET http://localhost:5000/api/ratings/recipe/1/average
+Content-Type: application/json

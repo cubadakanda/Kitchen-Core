@@ -6,11 +6,13 @@ import {
     updateRecipeRating,
     deleteRecipeRating,
     getRecipeRatingsByRecipeId,
-    getRecipeAverageRating
+    getRecipeAverageRating,
+    getRatingStats
 } from "../controllers/recipe_ratingsControllers.js";
 
 const router = express.Router();
 router.get('/ratings', getRecipeRatings);
+router.get('/ratings/stats', getRatingStats);
 router.get('/ratings/:id', getRecipeRatingById);
 router.get('/ratings/recipe/:recipeId', getRecipeRatingsByRecipeId);
 router.get('/ratings/recipe/:recipeId/average', getRecipeAverageRating);

@@ -19,13 +19,12 @@ const Header = ({ user, onLogout }) => {
 
   return (
     <header className="site-header">
-      <div className="header-container">
-        <Link to="/" className="brand">
+      <div className="header-container">        <Link to="/home" className="brand">
           <i className="fas fa-utensils brand-icon"></i>
           <span className="brand-name">Kitchen Core</span>
         </Link>        <nav className={`main-nav ${mobileMenuOpen ? 'mobile-open' : ''}`}>
           <ul>
-            <li><Link to="/" className="active">Home</Link></li>
+            <li><Link to="/home" className="active">Home</Link></li>
             <li><Link to="/recipes">Recipes</Link></li>
             {user && <li><Link to="/my-recipes">My Recipes</Link></li>}
           </ul>

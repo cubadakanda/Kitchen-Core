@@ -7,8 +7,6 @@ import LazyImage from '../../components/common/LazyImage';
 import '../../styles/bulma-home.css';
 import useRecipes from '../../hooks/useRecipes';
 import { fetchCategories } from '../../services/categoryService';
-import { getAverageRating } from '../../services/ratingService';
-import { favoriteService } from '../../services/favoriteService';
 import { getSafeImageUrl, getFullImageUrl } from '../../utils/imageUtils';
 
 const Home = () => {
@@ -18,8 +16,6 @@ const Home = () => {
   const [shareMessage, setShareMessage] = useState('');
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [recipeRatings, setRecipeRatings] = useState({});
-  const [favoriteRecipes, setFavoriteRecipes] = useState(new Set());
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const { fetchRecipes } = useRecipes();
@@ -42,78 +38,11 @@ const Home = () => {
     // Clear message after 3 seconds
     setTimeout(() => setShareMessage(''), 3000);
   };
+
   const closeSharePopup = () => {
     setShowSharePopup(false);
     setSelectedRecipe(null);
   };
-  // Load ratings for all recipes
-  const loadRecipeRatings = async (recipes) => {
-    const ratings = {};
-    try {
-      await Promise.all(
-        recipes.map(async (recipe) => {
-          try {
-            const ratingData = await getAverageRating(recipe.id);
-            ratings[recipe.id] = ratingData;
-          } catch (error) {
-            console.error(`Error loading rating for recipe ${recipe.id}:`, error);
-            ratings[recipe.id] = { average: 0, count: 0 };
-          }
-        })
-      );
-      setRecipeRatings(ratings);
-    } catch (error) {
-      console.error('Error loading recipe ratings:', error);
-    }
-  };
-  // Load user favorites
-  const loadUserFavorites = async () => {
-    if (!user) return;
-    
-    try {
-      console.log('Loading favorites for user:', user.id);
-      const favorites = await favoriteService.getUserFavorites(user.id);
-      console.log('Favorites loaded:', favorites);
-      const favoriteSet = new Set(favorites.map(fav => fav.recipe_id));
-      setFavoriteRecipes(favoriteSet);
-    } catch (error) {
-      console.error('Error loading user favorites:', error);
-      // Don't show alert for network errors, just log them
-      setFavoriteRecipes(new Set());
-    }
-  };
-
-  // Handle favorite toggle
-  const handleFavoriteToggle = async (recipeId) => {
-    if (!user) {
-      alert('Please login to add favorites');
-      return;
-    }
-
-    try {
-      const isFavorited = favoriteRecipes.has(recipeId);
-      
-      if (isFavorited) {
-        await favoriteService.removeFavorite(user.id, recipeId);
-        setFavoriteRecipes(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(recipeId);
-          return newSet;
-        });
-      } else {
-        await favoriteService.addFavorite(user.id, recipeId);
-        setFavoriteRecipes(prev => new Set([...prev, recipeId]));
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      if (error.message && error.message.includes('Cannot connect to server')) {
-        alert('Cannot connect to the server. Please make sure the backend is running.');
-      } else {
-        alert('Error updating favorites. Please try again.');
-      }
-    }
-  };
-
   // Helper function to get correct image URL
   const getRecipeImageUrl = (recipe) => {
     let imageUrl = recipe.image_url;
@@ -137,35 +66,26 @@ const Home = () => {
     console.log('=== END HOME IMAGE DEBUG ===');
     
     return finalUrl;
-  };  useEffect(() => {
+  };
+
+  useEffect(() => {
     const loadData = async () => {
       try {
         // Load recipes
         const recipesData = await fetchRecipes();
-        const featuredRecipes = recipesData.slice(0, 6);
-        setRecipes(featuredRecipes);
+        setRecipes(recipesData.slice(0, 6));
 
         // Load categories from database
         const categoriesData = await fetchCategories();
         setCategories(categoriesData);
-        
-        // Load ratings for the featured recipes
-        await loadRecipeRatings(featuredRecipes);
-        
-        // Load user favorites if user is logged in
-        if (user) {
-          await loadUserFavorites();
-        }
         
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
         setLoading(false);
       }
-    };
-
-    loadData();
-  }, [user]); // Add user to dependency array
+    };    loadData();
+  }, []); // Empty dependency array - hanya load sekali saat component mount
 
   return (
     <div className="home-page">
@@ -322,8 +242,30 @@ const Home = () => {
                                 onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
                                 onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                                 fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
-                              />                            </figure>
-                          </Link>
+                              />
+                            </figure>
+                          </Link><div className="recipe-time-badge" style={{
+                            position: 'absolute',
+                            top: '12px',
+                            right: '12px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            borderRadius: '20px',
+                            padding: '6px 12px',
+                            backdropFilter: 'blur(8px)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                          }}>
+                            <span style={{ 
+                              fontSize: '12px', 
+                              fontWeight: '600',
+                              color: '#363636',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}>
+                              <i className="fas fa-clock" style={{ fontSize: '10px', color: '#ff6b35' }}></i>
+                              {recipe.cooking_time || recipe.cook_time || recipe.prep_time || '30'} mins
+                            </span>
+                          </div>
                         </div>
                         <div className="card-content">
                           <div className="media">                            <div className="media-content">
@@ -338,31 +280,16 @@ const Home = () => {
                                 >
                                   {recipe.title}
                                 </p>
-                              </Link>                              <div className="tags">
-                                {recipeRatings[recipe.id] ? (
-                                  <span className="tag" style={{ 
-                                    backgroundColor: recipeRatings[recipe.id].average > 0 ? 'var(--secondary-color)' : '#e0e0e0', 
-                                    color: recipeRatings[recipe.id].average > 0 ? 'var(--text-on-secondary)' : '#666' 
-                                  }}>
-                                    <i className="fas fa-star mr-1"></i> 
-                                    {recipeRatings[recipe.id].average > 0 
-                                      ? recipeRatings[recipe.id].average 
-                                      : 'No rating'
-                                    }
-                                    {recipeRatings[recipe.id].count > 0 && (
-                                      <span className="ml-1">({recipeRatings[recipe.id].count})</span>
-                                    )}
-                                  </span>
-                                ) : (
-                                  <span className="tag" style={{ 
-                                    backgroundColor: '#e0e0e0', 
-                                    color: '#666' 
-                                  }}>
-                                    <i className="fas fa-star mr-1"></i> Loading...
-                                  </span>
-                                )}                                <span className="tag is-light">
-                                  <i className="fas fa-clock mr-1"></i> 
-                                  {recipe.cooking_time || recipe.cook_time || recipe.prep_time || '30'} mins
+                              </Link>
+                              <div className="tags">
+                                <span className="tag" style={{ 
+                                  backgroundColor: 'var(--secondary-color)', 
+                                  color: 'var(--text-on-secondary)' 
+                                }}>
+                                  <i className="fas fa-star mr-1"></i> 4.5
+                                </span>
+                                <span className="tag is-light">
+                                  <i className="fas fa-eye mr-1"></i> 234 views
                                 </span>
                               </div>
                             </div>
@@ -402,12 +329,9 @@ const Home = () => {
                                     >
                                       <i className="fas fa-eye mr-1"></i>
                                       View
-                                    </Link>                                    <button 
-                                      className={`button ${favoriteRecipes.has(recipe.id) ? 'is-danger' : 'is-light'}`} 
-                                      title={favoriteRecipes.has(recipe.id) ? 'Remove from favorites' : 'Add to favorites'}
-                                      onClick={() => handleFavoriteToggle(recipe.id)}
-                                    >
-                                      <i className={`${favoriteRecipes.has(recipe.id) ? 'fas fa-heart' : 'far fa-heart'}`}></i>
+                                    </Link>
+                                    <button className="button is-light" title="Add to favorites">
+                                      <i className="far fa-heart"></i>
                                     </button>
                                     <button 
                                       className="button" 

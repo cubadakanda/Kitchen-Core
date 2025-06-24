@@ -1,10 +1,9 @@
 const API_BASE_URL = 'http://localhost:5000/api';
 
-export const favoriteService = {
-  getUserFavorites: async (userId) => {
+export const favoriteService = {getUserFavorites: async (userId) => {
     try {
       console.log('Fetching favorites for user:', userId);
-      const response = await fetch(`${API_BASE_URL}/favorites/user/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/user-favorites/user/${userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -19,11 +18,23 @@ export const favoriteService = {
           console.log('No favorites found for user');
           return [];
         }
-        throw new Error(`HTTP error! status: ${response.status}`);
+        
+        // Try to get error details from response
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+          console.error('Backend error details:', errorData);
+        } catch (parseError) {
+          console.error('Could not parse error response');
+        }
+        
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
       console.log('Favorites data received:', data);
+      console.log('Number of favorites:', data.length);
       return data;
     } catch (error) {
       console.error('Error fetching user favorites:', error);
@@ -38,7 +49,7 @@ export const favoriteService = {
   addFavorite: async (userId, recipeId) => {
     try {
       console.log('Adding favorite - User:', userId, 'Recipe:', recipeId);
-      const response = await fetch(`${API_BASE_URL}/favorites`, {
+      const response = await fetch(`${API_BASE_URL}/user-favorites`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,11 +79,10 @@ export const favoriteService = {
       throw error;
     }
   },
-
   removeFavorite: async (userId, recipeId) => {
     try {
       console.log('Removing favorite - User:', userId, 'Recipe:', recipeId);
-      const response = await fetch(`${API_BASE_URL}/favorites/user/${userId}/recipe/${recipeId}`, {
+      const response = await fetch(`${API_BASE_URL}/user-favorites/user/${userId}/recipe/${recipeId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

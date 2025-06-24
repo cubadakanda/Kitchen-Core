@@ -2,14 +2,12 @@ import { useState, useEffect } from 'react';
 
 export const useFavorites = (userId) => {
   const [favorites, setFavorites] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchFavorites = async () => {
+  const [loading, setLoading] = useState(true);  const fetchFavorites = async () => {
     if (!userId) return;
     
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3001/api/user-favorites/user/${userId}`);
+      const response = await fetch(`http://localhost:5000/api/user-favorites/user/${userId}`);
       const data = await response.json();
       setFavorites(data);
     } catch (error) {
@@ -17,11 +15,9 @@ export const useFavorites = (userId) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const addFavorite = async (recipeId) => {
+  };  const addFavorite = async (recipeId) => {
     try {
-      const response = await fetch('http://localhost:3001/api/user-favorites', {
+      const response = await fetch('http://localhost:5000/api/user-favorites', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,11 +32,9 @@ export const useFavorites = (userId) => {
     } catch (error) {
       console.error('Error adding favorite:', error);
     }
-  };
-
-  const removeFavorite = async (recipeId) => {
+  };  const removeFavorite = async (recipeId) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/user-favorites/${recipeId}`, {
+      const response = await fetch(`http://localhost:5000/api/user-favorites/user/${userId}/recipe/${recipeId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
