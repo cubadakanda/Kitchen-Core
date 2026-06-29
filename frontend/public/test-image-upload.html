@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .preview-area {
+            margin: 20px 0;
+        }
+        .preview-image {
+            max-width: 300px;
+            max-height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .info {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Upload Test</h1>
+    <p>This test page verifies that image upload is working correctly.</p>
+    
+    <div class="upload-area">
+        <input type="file" id="imageInput" accept="image/*">
+        <p>Select an image file to test the upload process</p>
+    </div>
+    
+    <div class="preview-area">
+        <h3>Preview:</h3>
+        <img id="previewImage" class="preview-image" style="display: none;" alt="Preview">
+        <div id="imageInfo" class="info" style="display: none;"></div>
+    </div>
+    
+    <div id="base64Output" style="display: none;">
+        <h3>Base64 Output (first 100 characters):</h3>
+        <textarea id="base64Text" rows="5" cols="80" readonly></textarea>
+    </div>
+
+    <script>
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Show file info
+            const info = document.getElementById('imageInfo');
+            info.innerHTML = `
+                <strong>File Info:</strong><br>
+                Name: ${file.name}<br>
+                Size: ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
+                Type: ${file.type}<br>
+                Last Modified: ${new Date(file.lastModified).toLocaleString()}
+            `;
+            info.style.display = 'block';
+            
+            // Create preview using URL.createObjectURL
+            const previewUrl = URL.createObjectURL(file);
+            const preview = document.getElementById('previewImage');
+            preview.src = previewUrl;
+            preview.style.display = 'block';
+            
+            // Convert to base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                const base64Text = document.getElementById('base64Text');
+                const base64Output = document.getElementById('base64Output');
+                
+                base64Text.value = base64.substring(0, 100) + '...';
+                base64Output.style.display = 'block';
+                
+                console.log('Full base64 data:', base64);
+                console.log('Preview URL:', previewUrl);
+            };
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>

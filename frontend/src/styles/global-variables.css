@@ -1,0 +1,55 @@
+/* Global Color Variables */
+:root {
+  --primary-color: #432818;
+  --secondary-color: #faf0ca;
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #432818;
+  --light-bg: #f8fafc;
+  --border-color: #e5e7eb;
+  --accent-color: #8c5e2a;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #8c5e2a; /* Changed from blue to brown accent */
+}
+
+/* Bulma overrides for colors */
+.button.is-primary {
+  background-color: var(--primary-color) !important;
+  color: var(--text-on-primary) !important;
+}
+
+.button.is-info {
+  background-color: var(--accent-color) !important;
+  color: var(--text-on-primary) !important;
+}
+
+.button.is-link {
+  background-color: var(--primary-color) !important;
+  color: var(--text-on-primary) !important;
+}
+
+.tag.is-info {
+  background-color: var(--accent-color) !important;
+  color: var(--text-on-primary) !important;
+}
+
+.tag.is-primary {
+  background-color: var(--primary-color) !important;
+  color: var(--text-on-primary) !important;
+}
+
+.message.is-info {
+  background-color: rgba(140, 94, 42, 0.1) !important;
+  border-color: var(--accent-color) !important;
+}
+
+.message.is-info .message-header {
+  background-color: var(--accent-color) !important;
+  color: var(--text-on-primary) !important;
+}
+
+.message.is-info .message-body {
+  color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}

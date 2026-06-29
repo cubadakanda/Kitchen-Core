@@ -1,0 +1,159 @@
+/* Color variables to match updated theme */
+:root {
+  --primary-color: #432818;     /* Dark brown */
+  --primary-hover: #33200e;     /* Darker brown for hover state */
+  --accent-color: #faf0ca;      /* Light cream */
+  --accent-dark: #f5e7a3;       /* Slightly darker cream */
+  --text-dark: #1f2937;         /* For main text */
+  --text-light: #f8fafc;        /* For text on dark backgrounds */
+}
+
+/* Home page styling with Kitchen Delights Theme */
+.gradient-bg {
+  background: linear-gradient(135deg, #f5f7fa 0%, rgba(13, 59, 102, 0.1) 100%);
+  min-height: 100vh;
+}
+
+.hero-pattern {
+  background-image: radial-gradient(#ffffff 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-color: var(--accent-color);
+  opacity: 0.9;
+}
+
+/* Recipe Cards */
+.recipe-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s;
+}
+
+.recipe-card:hover {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-image-container {
+  overflow: hidden;
+}
+
+.recipe-image {
+  width: 100%;
+  height: 12rem;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.recipe-card:hover .recipe-image {
+  transform: scale(1.05);
+}
+
+/* Category Cards */
+.category-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.category-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.category-icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.75rem;
+}
+
+/* Tab system */
+.animated-tab {
+  transition: all 0.3s ease;
+}
+
+.animated-tab:hover {
+  transform: translateY(-2px);
+}
+
+.ingredient-checkbox:checked + span {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+/* Recipe Detail */
+.recipe-detail {
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.step-number {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.5rem;
+  width: 1.5rem;
+  border-radius: 9999px;
+  background-color: var(--accent-color);
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+/* Newsletter */
+.newsletter-section {
+  background-color: var(--primary-color);
+  color: var(--accent-color);
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .recipe-detail-image {
+    height: 300px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-section {
+    text-align: center;
+  }
+}
+
+/* Override Tailwind utility classes in recipe context */
+.bg-orange-50 {
+  background-color: var(--accent-color) !important;
+}
+
+.bg-orange-100 {
+  background-color: var(--accent-dark) !important;
+}
+
+.bg-orange-500, .bg-orange-600 {
+  background-color: var(--primary-color) !important;
+}
+
+.text-orange-500 {
+  color: var(--primary-color) !important;
+}
+
+.hover\:bg-orange-600:hover {
+  background-color: var(--primary-hover) !important;
+}
+
+.hover\:text-orange-500:hover {
+  color: var(--primary-color) !important;
+}
+
+.border-orange-500 {
+  border-color: var(--primary-color) !important;
+}

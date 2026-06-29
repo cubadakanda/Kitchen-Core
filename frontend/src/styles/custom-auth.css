@@ -1,0 +1,56 @@
+.kitchen-logo {
+  max-width: 120px;
+  margin-bottom: 1rem;
+}
+
+.auth-page {
+  background: linear-gradient(135deg, #432818, #33200e);
+}
+
+.auth-logo h1 {
+  color: #faf0ca;
+  font-weight: bold;
+}
+
+.auth-card {
+  background-color: rgba(250, 240, 202, 0.95);
+  border: 2px solid #432818;
+}
+
+.btn-primary {
+  background-color: #432818;
+  transition: all 0.3s ease;
+  color: #faf0ca;
+}
+
+.btn-primary:hover {
+  background-color: #33200e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.form-group input {
+  border: 1px solid #432818;
+  background-color: #ffffff;
+}
+
+.form-group input:focus {
+  border-color: #432818;
+  box-shadow: 0 0 0 2px rgba(67, 40, 24, 0.25);
+}
+
+.form-group label {
+  color: #432818;
+}
+
+.auth-card h2 {
+  color: #432818;
+}
+
+.auth-footer a {
+  color: #432818;
+}
+
+.auth-footer p {
+  color: #432818;
+}

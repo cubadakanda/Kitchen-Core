@@ -1,0 +1,42 @@
+<svg width="500" height="400" viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Recipe book -->
+  <rect x="200" y="150" width="100" height="120" rx="5" fill="#E8E8E8"/>
+  <rect x="205" y="155" width="90" height="110" rx="3" fill="white"/>
+  <line x1="215" y1="170" x2="285" y2="170" stroke="#333" stroke-width="2"/>
+  <line x1="215" y1="185" x2="275" y2="185" stroke="#666" stroke-width="1"/>
+  <line x1="215" y1="195" x2="280" y2="195" stroke="#666" stroke-width="1"/>
+  <line x1="215" y1="205" x2="270" y2="205" stroke="#666" stroke-width="1"/>
+  
+  <!-- Fork and knife -->
+  <rect x="150" y="180" width="3" height="80" fill="#C0392B"/>
+  <rect x="145" y="175" width="13" height="8" fill="#C0392B"/>
+  <line x1="147" y1="175" x2="147" y2="180" stroke="#C0392B" stroke-width="1"/>
+  <line x1="151" y1="175" x2="151" y2="180" stroke="#C0392B" stroke-width="1"/>
+  <line x1="155" y1="175" x2="155" y2="180" stroke="#C0392B" stroke-width="1"/>
+  
+  <rect x="347" y="180" width="3" height="80" fill="#C0392B"/>
+  <polygon points="345,175 352,175 348.5,185" fill="#C0392B"/>
+  
+  <!-- Plate with food -->
+  <ellipse cx="250" cy="320" rx="60" ry="15" fill="#ECF0F1"/>
+  <ellipse cx="250" cy="315" rx="55" ry="12" fill="white"/>
+  
+  <!-- Food items on plate -->
+  <circle cx="235" cy="315" r="8" fill="#E74C3C"/>
+  <circle cx="250" cy="312" r="6" fill="#F39C12"/>
+  <circle cx="265" cy="315" r="7" fill="#27AE60"/>
+  <ellipse cx="250" cy="325" rx="15" ry="5" fill="#D35400"/>
+  
+  <!-- Chef hat floating -->
+  <rect x="320" y="100" width="40" height="20" rx="10" fill="white"/>
+  <circle cx="340" cy="100" r="6" fill="#E74C3C"/>
+  
+  <!-- Stars/sparkles around -->
+  <polygon points="120,120 125,130 135,130 127,137 130,147 120,140 110,147 113,137 105,130 115,130" fill="#F1C40F"/>
+  <polygon points="380,130 383,136 390,136 385,140 387,147 380,143 373,147 375,140 370,136 377,136" fill="#F1C40F"/>
+  <polygon points="150,300 152,304 157,304 154,307 155,312 150,309 145,312 146,307 143,304 148,304" fill="#F1C40F"/>
+  
+  <!-- Background kitchen counter -->
+  <rect x="50" y="350" width="400" height="40" fill="#34495E"/>
+  <rect x="50" y="345" width="400" height="10" fill="#2C3E50"/>
+</svg>

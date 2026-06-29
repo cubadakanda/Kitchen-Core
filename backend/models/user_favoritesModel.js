@@ -47,4 +47,15 @@ RecipeModel.belongsToMany(UserModel, {
     as: 'userFavorites' 
 });
 
+// Direct associations for the junction table
+UserFavoriteModel.belongsTo(RecipeModel, { 
+    foreignKey: 'recipe_id', 
+    as: 'recipe' 
+});
+
+UserFavoriteModel.belongsTo(UserModel, { 
+    foreignKey: 'user_id', 
+    as: 'user' 
+});
+
 export default UserFavoriteModel;

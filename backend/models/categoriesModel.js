@@ -13,6 +13,10 @@ const CategoryModel = db.define('categories', {
         unique: true,
         allowNull: false
     },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
     slug: {
         type: DataTypes.STRING(120),
         allowNull: false
